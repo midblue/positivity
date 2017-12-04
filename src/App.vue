@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    {{ msg }}
+    <div>{{ overview }}</div>
+    <div>
   </div>
 </template>
 
@@ -9,7 +10,14 @@ export default {
   data () {
     return {
       apiURL: './api',
-      msg: ''
+      overview: {
+        who: '',
+        whatPlace: '',
+        where: '',
+        lostMatches: [],
+        wonMatches: [],
+        date: null,
+      },
     }
   },
   mounted () {
@@ -17,7 +25,12 @@ export default {
     const participant = 'jasp'
     this.getParticipantInTournament(tournament, participant)
     .then ((data) => {
-      this.msg = `${participant} placed #${data.final_rank} at `
+      console.log(data)
+      this.overview.who = participant
+      this.overview.whatPlace = data.finalRank
+      this.overview.where = data.tournament
+      this.overview.lostMatches = data.lostMatches
+      this.overview.wonMatches = data.wonMatches
     })
   },
   methods: {

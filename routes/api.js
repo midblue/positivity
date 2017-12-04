@@ -5,39 +5,51 @@ const router = express.Router()
 
 router.get('/tournament/:tournament', function (req, res) {
   const tournament = req.params.tournament
-	const request = `tournaments/${tournament}.json`
-  fetch(`https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1/${request}`, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'include',
-    include_participants: true,
-  })
+  getChallongeTournamentData(tournament)
   .then((response) => response.json())
-  .then((data) => res.json(data))
+  .then((data) => res.json(data.tournament))
 })
 
 router.get('/tournament/:tournament/participant/:participant', function (req, res) {
   const tournament = req.params.tournament
   const participant = req.params.participant
-	const request = `tournaments/${tournament}/participants.json`
-  fetch(`https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1/${request}`, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'include',
-  })
+	getChallongeTournamentData(tournament)
   .then((response) => response.json())
   .then((data) => {
-  	console.log(data)
   	if (data) {
-  		res.json(data
-  			.filter((a) => {
-	        if (a.participant.name === participant)
-	          return 1
-	        return 0
-	      })[0].participant
-	  	)
+  		let participantID
+  		let finalRank
+			let filteredData = data.tournament.participants
+			.filter((a) => {
+        if (a.participant.name === participant)
+        	participantID = a.participant.id
+	        finalRank = a.participant.final_rank
+          return 1
+        return 0
+      })[0].participant
+      filteredData['finalRank'] = finalRank
+      filteredData['tournament'] = data.tournament.name
+      filteredData['wonMatches'] = data.tournament.matches.filter((m) => {
+      	console.log(m)
+      	if (m.match.winner_id == participantID) return 1
+    		return 0
+      })
+      filteredData['lostMatches'] = data.tournament.matches.filter((m) => {
+      	if (m.match.loser_id == participantID) return 1
+      	return 0
+      })
+  		res.json(filteredData)
   	}
   })
 })
 
+
+function getChallongeTournamentData (tournament) {
+	const request = `tournaments/${tournament}.json`
+	return fetch(`https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1/${request}?include_participants=1&include_matches=1`, {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
+  })
+}
 module.exports = router
