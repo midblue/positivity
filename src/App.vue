@@ -7,20 +7,23 @@
     </button>
     <br />
     <br />
-    <h2>{{ participant }} got {{ placingOrdinal }}</h2>
-    <div>at {{ tournamentName }}</div>
-    <br />
-    <div>
-      <h3>Wins (avg placing {{ beatAvgPlacing }})</h3>
-      <div v-for="win in winData">
-        {{ win.opponent }} ({{ win.opponentPlacing }})
+    <div v-if="tournamentData">
+      <h2>{{ participant }} got {{ placingOrdinal }}</h2>
+      <div>of {{ totalParticipants }} entrants (top {{ parseInt(100 * placing / totalParticipants) }}%)</div>
+      <div>at {{ tournamentName }}</div>
+      <br />
+      <div>
+        <h3>Beat (avg placing {{ beatAvgPlacing }})</h3>
+        <div v-for="win in winData">
+          {{ formatDateAsTimeOnly(win.completed_at) }} - {{ win.opponent }} ({{ ordinalNumber(win.opponentPlacing) }})
+        </div>
       </div>
-    </div>
-    <br />
-    <div>
-      <h3>Losses (avg placing {{ lostToAvgPlacing }})</h3>
-      <div v-for="loss in lossData">
-        {{ loss.opponent }} ({{ loss.opponentPlacing }})
+      <br />
+      <div>
+        <h3>Lost to (avg placing {{ lostToAvgPlacing }})</h3>
+        <div v-for="loss in lossData">
+          {{ formatDateAsTimeOnly(loss.completed_at) }} - {{ loss.opponent }} ({{ ordinalNumber(loss.opponentPlacing) }})
+        </div>
       </div>
     </div>
   </div>
@@ -46,6 +49,10 @@ export default {
     tournamentName () {
       if (!this.tournamentData) return
       return this.tournamentData.name
+    },
+    totalParticipants () {
+      if (!this.tournamentData) return
+      return this.tournamentData.participants_count
     },
     id () {
       if (!this.tournamentData) return
@@ -91,10 +98,7 @@ export default {
     },
     placingOrdinal () {
       if (!this.placing) return
-      if (this.placing % 10 === 1 && this.placing % 100 !== 11) return this.placing + 'st'
-      if (this.placing % 10 === 2 && this.placing % 100 !== 12) return this.placing + 'nd'
-      if (this.placing % 10 === 3 && this.placing % 100 !== 13) return this.placing + 'rd'
-      return this.placing + 'th'
+      return this.ordinalNumber(this.placing)
     },
     beatAvgPlacing () {
       if (!this.tournamentData) return
@@ -118,6 +122,10 @@ export default {
       .then(res => res.json())
       .then(data => { this.tournamentData = data })
     },
+    formatDateAsTimeOnly (date) {
+      const d = new Date(date)
+      return d.getHours() + ':' + d.getMinutes()
+    },
     getNameFromID (id) {
       const foundName = this.tournamentData.participants.filter((p) => {
         return p.participant.id === id ? 1 : 0
@@ -132,11 +140,16 @@ export default {
     },
     getPlacing (participant) {
       const id = typeof participant === 'number' ? participant : this.getIDfromName(participant)
-      console.log(id)
       const foundID = this.tournamentData.participants.filter((p) => {
         return p.participant.id === id ? 1 : 0
       })
       if (foundID.length > 0) return foundID[0].participant.final_rank
+    },
+    ordinalNumber (number) {
+      if (number % 10 === 1 && number % 100 !== 11) return number + 'st'
+      if (number % 10 === 2 && number % 100 !== 12) return number + 'nd'
+      if (number % 10 === 3 && number % 100 !== 13) return number + 'rd'
+      return number + 'th'
     },
   },
 }
