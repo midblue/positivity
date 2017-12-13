@@ -51,3 +51,16 @@ ooh i like this
 
 avg placing of people that beat you
 
+
+
+
+
+
+tech directions
+***************
+
+search all tournaments from the creator of this one
+	need to find a way to get tournament creator string
+		render on the server?
+
+

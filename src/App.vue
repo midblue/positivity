@@ -6,6 +6,9 @@
       <button @click="APIQuery" type="submit">
         Go
       </button>
+      <button @click="APIQueryTournamentFamily">
+        Sister Tournaments
+      </button>
     </form>
     <br />
     <br />
@@ -32,6 +35,7 @@
         </div>
       </div>
     </div>
+    <div v-html="tempHTML"></div>
   </div>
 </template>
 
@@ -44,6 +48,7 @@ export default {
       participant: 'jasp',
       typedParticipant: 'jasp',
       tournamentData: {},
+      tempHTML: ''
     }
   },
   computed: {
@@ -134,6 +139,11 @@ export default {
         this.$set(this.tournamentData, this.tournament, data)
       })
     },
+    APIQueryTournamentFamily () {
+      fetch(`${this.apiURL}/sisterTournaments/${this.tournament}`)
+      .then(res => res.text())
+      .then(data => this.tempHTML = data)
+    },
     formatDateAsTimeOnly (date) {
       const d = new Date(date)
       return d.getHours() + ':' + d.getMinutes()
@@ -170,7 +180,7 @@ export default {
 <style scoped lang="scss">
 #app {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   padding: 60px;
   font-family: monospace;
   font-size: 14px;

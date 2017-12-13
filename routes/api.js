@@ -3,6 +3,8 @@ const fetch = require('node-fetch')
 const apiKey = require('../apikey_local.json')
 const router = express.Router()
 
+const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
+
 router.get('/tournament/:tournament', function (req, res) {
   const tournament = req.params.tournament
   getChallongeTournamentData(tournament)
@@ -10,6 +12,25 @@ router.get('/tournament/:tournament', function (req, res) {
   .then((data) => res.json(data.tournament))
 })
 
+router.get('/sisterTournaments/:tournament', (req, res) => {
+  const tournament = req.params.tournaments
+  fetch(`http://www.challonge.com/${tournament}`)
+  .then(res => res.text())
+  .then(html => {
+    html = html.substring(html.indexOf('Hosted by'))
+    html = html.substring(html.indexOf('<a'))
+    html = html.substring(html.indexOf('>') + 1)
+    html = html.substring(0, html.indexOf('</a>'))
+    fetch(`http://challonge.com/users/${html}`)
+    .then(res => res.text())
+    .then(html => {
+      html = html.substring(html.indexOf('<h3>Tournaments'))
+      html = html.substring(0, html.indexOf('</table>'))
+      res.send(html)
+    })
+  })
+})
+/*
 router.get('/tournament/:tournament/participant/:participant', function (req, res) {
   const tournament = req.params.tournament
   const participant = req.params.participant
@@ -41,15 +62,15 @@ router.get('/tournament/:tournament/participant/:participant', function (req, re
   		res.json(filteredData)
   	}
   })
-})
-
+})*/
 
 function getChallongeTournamentData (tournament) {
 	const request = `tournaments/${tournament}.json`
-	return fetch(`https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1/${request}?include_participants=1&include_matches=1`, {
+	return fetch(`${apiURL}/${request}?include_participants=1&include_matches=1`, {
     method: 'GET',
     mode: 'cors',
     credentials: 'include',
   })
 }
+
 module.exports = router
