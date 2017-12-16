@@ -3,11 +3,8 @@
     <form v-on:submit.prevent="APIQuery">
       <input v-model="tournament" />
       <input v-model="typedParticipant" />
-      <button @click="APIQuery" type="submit">
+      <button type="submit">
         Go
-      </button>
-      <button @click="APIQueryTournamentFamily">
-        Sister Tournaments
       </button>
     </form>
     <br />
@@ -35,7 +32,17 @@
         </div>
       </div>
     </div>
-    <div v-html="tempHTML"></div>
+    <br />
+    <div v-if="otherTournaments.length">
+      <div>
+        We also found {{ participant }} in 
+        <strong>{{ otherTournaments.length }}</strong>
+        related tournaments.
+      </div>
+    </div>
+    <div v-else class="fade">
+      Searching related tournaments...
+    </div>
   </div>
 </template>
 
@@ -45,10 +52,10 @@ export default {
     return {
       apiURL: './api',
       tournament: 'lieswkev',
-      participant: 'jasp',
-      typedParticipant: 'jasp',
+      participant: 'watch',
+      typedParticipant: 'watch',
       tournamentData: {},
-      tempHTML: ''
+      otherTournaments: {}
     }
   },
   computed: {
@@ -138,11 +145,10 @@ export default {
         this.participant = this.typedParticipant
         this.$set(this.tournamentData, this.tournament, data)
       })
-    },
-    APIQueryTournamentFamily () {
-      fetch(`${this.apiURL}/sisterTournaments/${this.tournament}`)
-      .then(res => res.text())
-      .then(data => this.tempHTML = data)
+      this.otherTournaments = {}
+      fetch(`${this.apiURL}/sisterTournaments/${this.tournament}/${this.participant}`)
+      .then(res => res.json())
+      .then(data => this.otherTournaments = data)
     },
     formatDateAsTimeOnly (date) {
       const d = new Date(date)
