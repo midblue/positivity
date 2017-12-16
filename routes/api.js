@@ -2,6 +2,7 @@ const express = require('express')
 const fetch = require('node-fetch')
 const apiKey = require('../apikey_local.json')
 const router = express.Router()
+const phantom = require('phantom')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
 
@@ -13,23 +14,17 @@ router.get('/tournament/:tournament', function (req, res) {
 })
 
 router.get('/sisterTournaments/:tournament', (req, res) => {
-  const tournament = req.params.tournaments
-  fetch(`http://www.challonge.com/${tournament}`)
+  const tournament = req.params.tournament
+  getTournamentHost(tournament)
+  .then((host) => fetch(`http://challonge.com/users/${host}`))
   .then(res => res.text())
   .then(html => {
-    html = html.substring(html.indexOf('Hosted by'))
-    html = html.substring(html.indexOf('<a'))
-    html = html.substring(html.indexOf('>') + 1)
-    html = html.substring(0, html.indexOf('</a>'))
-    fetch(`http://challonge.com/users/${html}`)
-    .then(res => res.text())
-    .then(html => {
-      html = html.substring(html.indexOf('<h3>Tournaments'))
-      html = html.substring(0, html.indexOf('</table>'))
-      res.send(html)
-    })
+    html = html.substring(html.indexOf('<h3>Tournaments'))
+    html = html.substring(0, html.indexOf('</table>'))
+    res.send(html)
   })
 })
+
 /*
 router.get('/tournament/:tournament/participant/:participant', function (req, res) {
   const tournament = req.params.tournament
@@ -70,6 +65,25 @@ function getChallongeTournamentData (tournament) {
     method: 'GET',
     mode: 'cors',
     credentials: 'include',
+  })
+}
+function getTournamentHost (tournament) {
+  return new Promise((resolve, reject) => {
+    (async function() {
+      const instance = await phantom.create()
+      const page = await instance.createPage()
+      await page.on('onResourceRequested', function(requestData) {
+        console.info('Requesting', requestData.url)
+      })
+
+      const status = await page.open(`http://challonge.com/${tournament}`)
+      let content = await page.property('content')
+      content = content.substring(content.indexOf('Hosted by') + 14)
+      content = content.substring(content.indexOf('users/') + 6)
+      content = content.substring(0, content.indexOf('"'))
+      instance.exit()
+      resolve(content)
+    })()
   })
 }
 
