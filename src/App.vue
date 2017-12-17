@@ -17,7 +17,7 @@
       <div>
         <h3>Beat (avg placing {{ beatAvgPlacing }})</h3>
         <div v-for="win in winData">
-          <span class="fade">{{ formatDateAsTimeOnly(win.completed_at) }} </span>
+          <span class="fade">{{ formatDateAsTimeOnly(win.time) }} </span>
           <span>{{ win.opponent }}</span>
           <span class="fade sub"> {{ ordinalNumber(win.opponentPlacing) }}</span>
         </div>
@@ -26,7 +26,7 @@
       <div>
         <h3>Lost to (avg placing {{ lostToAvgPlacing }})</h3>
         <div v-for="loss in lossData">
-          <span class="fade">{{ formatDateAsTimeOnly(loss.completed_at) }} </span>
+          <span class="fade">{{ formatDateAsTimeOnly(loss.time) }} </span>
           <span>{{ loss.opponent }}</span>
           <span class="fade sub"> {{ ordinalNumber(loss.opponentPlacing) }}</span>
         </div>
@@ -62,8 +62,8 @@ export default {
     participantElement () {
       if (!this.tournamentData[this.tournament]) return
       return this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.participant.display_name === this.participant ? 1 : 0
-      })[0].participant
+        return p.name === this.participant ? 1 : 0
+      })[0]
     },
     tournamentName () {
       if (!this.tournamentData[this.tournament]) return
@@ -71,7 +71,7 @@ export default {
     },
     totalParticipants () {
       if (!this.tournamentData[this.tournament]) return
-      return this.tournamentData[this.tournament].participants_count
+      return this.tournamentData[this.tournament].participants.length
     },
     id () {
       if (!this.tournamentData[this.tournament]) return
@@ -82,11 +82,11 @@ export default {
       if (!tournament) return
       let data = []
       for (let m in tournament.matches){
-        if (tournament.matches[m].match.winner_id === this.id){
+        if (tournament.matches[m].winnerId === this.id){
           data.push({
-            ...tournament.matches[m].match,
-            opponent: this.getNameFromID(tournament.matches[m].match.loser_id),
-            opponentPlacing: this.getPlacing(tournament.matches[m].match.loser_id),
+            ...tournament.matches[m],
+            opponent: this.getNameFromID(tournament.matches[m].loserId),
+            opponentPlacing: this.getPlacing(tournament.matches[m].loserId),
           })
         }
       }
@@ -97,11 +97,11 @@ export default {
       if (!tournament) return
       let data = []
       for (let m in tournament.matches){
-        if (tournament.matches[m].match.loser_id === this.id){
+        if (tournament.matches[m].loserId === this.id){
           data.push({
-            ...tournament.matches[m].match,
-            opponent: this.getNameFromID(tournament.matches[m].match.winner_id),
-            opponentPlacing: this.getPlacing(tournament.matches[m].match.winner_id),
+            ...tournament.matches[m],
+            opponent: this.getNameFromID(tournament.matches[m].winnerId),
+            opponentPlacing: this.getPlacing(tournament.matches[m].winnerId),
           })
         }
       }
@@ -115,7 +115,7 @@ export default {
     },
     placing () {
       if (!this.tournamentData[this.tournament]) return
-      return this.participantElement.final_rank
+      return this.participantElement.placing
     },
     placingOrdinal () {
       if (!this.placing) return
@@ -146,7 +146,7 @@ export default {
         this.$set(this.tournamentData, this.tournament, data)
       })
       this.otherTournaments = {}
-      fetch(`${this.apiURL}/sisterTournaments/${this.tournament}/${this.participant}`)
+      fetch(`${this.apiURL}/alsoCompetedIn/${this.tournament}/${this.typedParticipant}`)
       .then(res => res.json())
       .then(data => this.otherTournaments = data)
     },
@@ -156,22 +156,22 @@ export default {
     },
     getNameFromID (id) {
       const foundName = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.participant.id === id ? 1 : 0
+        return p.id === id ? 1 : 0
       })
-      if (foundName.length > 0) return foundName[0].participant.display_name
+      if (foundName.length > 0) return foundName[0].name
     },
     getIDfromName (name) {
       const foundName = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.participant.display_name === name ? 1 : 0
+        return p.display_name === name ? 1 : 0
       })
-      if (foundName.length > 0) return foundName[0].participant.id
+      if (foundName.length > 0) return foundName[0].id
     },
     getPlacing (participant) {
       const id = typeof participant === 'number' ? participant : this.getIDfromName(participant)
       const foundID = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.participant.id === id ? 1 : 0
+        return p.id === id ? 1 : 0
       })
-      if (foundID.length > 0) return foundID[0].participant.final_rank
+      if (foundID.length > 0) return foundID[0].placing
     },
     ordinalNumber (number) {
       if (number % 10 === 1 && number % 100 !== 11) return number + 'st'
