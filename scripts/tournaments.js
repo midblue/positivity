@@ -21,33 +21,10 @@ async function getTournament (url) {
     date: data.started_at,
     participantsCount: data.participants_count,
     participants: data.participants.map(p => {
-      return {
-        id: p.participant.id,
-        name: p.participant.name,
-        seed: p.participant.seed,
-        placing: p.participant.final_rank,
-      }
+      return parseParticipantData(p.participant)
     }),
     matches: data.matches.map(m => {
-      return {
-        players: [
-          {
-            id: m.match.player1_id,
-            name: getNameFromID(m.match.player1_id, data),
-            won: m.match.player1_id === m.match.winner_id,
-          },
-          {
-            id: m.match.player2_id,
-            name: getNameFromID(m.match.player2_id, data),
-            won: m.match.player2_id === m.match.winner_id,
-          },
-        ],
-        winnerId: m.match.winner_id,
-        loserId: m.match.loser_id,
-        winnerName: getNameFromID(m.match.winner_id, data),
-        loserName: getNameFromID(m.match.loser_id, data),
-        time: m.match.completed_at,
-      }
+      return parseMatchData(m.match, data)
     }),
   }
 
@@ -99,6 +76,29 @@ async function getTournament (url) {
     })
   }
 
+  // save player data
+  data.participants.map(p => {
+    const participantId = p.participant.id
+    let relevantMatches = data.matches.map(m => {
+      if (m.match.player1_id === participantId || m.match.player2_id === participantId)
+        return {
+          ...parseMatchData(m.match, data),
+          tournament: data.name,
+        }
+    }).filter(m => m)
+    Players.update(
+      p.participant.name,
+      data.name,
+      relevantMatches,
+      {
+        seed: p.participant.seed,
+        placing: p.participant.final_rank,
+        outOf: data.participants_count,
+      }
+    )
+  })
+
+  // save it
   Tournaments[url] = newTournament
   return newTournament
 }
@@ -117,6 +117,37 @@ function getChallongeTournamentData (tournament) {
       resolve(json.tournament)
     })
   })
+}
+
+function parseMatchData (matchData, tournamentData) {
+  return {
+    players: [
+      {
+        id: matchData.player1_id,
+        name: getNameFromID(matchData.player1_id, tournamentData),
+        won: matchData.player1_id === matchData.winner_id,
+      },
+      {
+        id: matchData.player2_id,
+        name: getNameFromID(matchData.player2_id, tournamentData),
+        won: matchData.player2_id === matchData.winner_id,
+      },
+    ],
+    winnerId: matchData.winner_id,
+    loserId: matchData.loser_id,
+    winnerName: getNameFromID(matchData.winner_id, tournamentData),
+    loserName: getNameFromID(matchData.loser_id, tournamentData),
+    time: matchData.completed_at,
+  }
+}
+
+function parseParticipantData (participantData) {
+  return {
+    id: participantData.id,
+    name: participantData.name,
+    seed: participantData.seed,
+    placing: participantData.final_rank,
+  }
 }
 
 function getNameFromID (id, tournamentData) {

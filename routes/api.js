@@ -4,6 +4,7 @@ const apiKey = require('../apikey_local.json')
 const router = express.Router()
 const phantom = require('phantom')
 const Tournaments = require('../scripts/tournaments.js')
+const Players = require('../scripts/players.js')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
 

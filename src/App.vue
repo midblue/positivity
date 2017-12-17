@@ -139,6 +139,7 @@ export default {
   },
   methods: {
     APIQuery () {
+      //console.log('query')
       fetch(`${this.apiURL}/tournament/${this.tournament}`)
       .then(res => res.json())
       .then(data => {

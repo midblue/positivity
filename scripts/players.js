@@ -1,35 +1,43 @@
 const Players = {}
 
 module.exports = {
-	newPlayer (name) {
+	new (name) {
 	  const newPlayer = {
-	    name: name,
 	    placings: {},
 	    matches: [],
 	  }
-	  Players.push(newPlayer)
+	  Players[name] = newPlayer
 	  return newPlayer
 	},
 
-	updatePlayer (name, matches, placing) {
-		if (Players[name]){
-			for (let match in matches)
-				Players[name].matches.push(matches[match])
-			Players[name].placings.push(placing)
-			return Players[name]
+	update (name, tournament, matches, placing) {
+		if (!Players[name])
+			this.new(name)
+		if (matches) {
+			for (let m in matches)
+				Players[name].matches.push(matches[m])
 		}
-		else return newPlayer(name)
+		if (placing) Players[name].placings[tournament] = placing
 	},
 
-	getPlayer (name) {
-		return Players[name] || newPlayer(name)
+	get (name) {
+		return Players[name] || this.new(name)
 	},
 
-	getPlacings (name) {
+	placings (name) {
 		return Players[name] ? Players[name].placings : {}
 	},
 
-	getMatches (name) {
+	matches (name) {
 		return Players[name] ? Players[name].matches : []
+	},
+
+	exists (name) {
+		return Players[name] ? true : false
+	},
+
+	report () {
+		console.log(`${Object.keys(Players)} 
+			${Object.keys(Players).length} players tracked`)
 	},
 }
