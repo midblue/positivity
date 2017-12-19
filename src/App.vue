@@ -18,7 +18,7 @@
         <h3>Beat (avg placing {{ beatAvgPlacing }})</h3>
         <div v-for="win in winData">
           <span class="fade">{{ formatDateAsTimeOnly(win.time) }} </span>
-          <span>{{ win.opponent }}</span>
+          <span>{{ win.opponent }} {{ findPlayerInOtherTournaments(win.opponent) }}</span>
           <span class="fade sub"> {{ ordinalNumber(win.opponentPlacing) }}</span>
         </div>
       </div>
@@ -35,7 +35,9 @@
     <br />
     <div v-if="otherTournaments.length">
       <div>
-        We also found {{ participant }} in 
+        We also found
+        <strong>{{ participant }}</strong>
+        in 
         <strong>{{ otherTournaments.length }}</strong>
         related tournaments.
       </div>
@@ -150,6 +152,19 @@ export default {
       fetch(`${this.apiURL}/alsoCompetedIn/${this.tournament}/${this.typedParticipant}`)
       .then(res => res.json())
       .then(data => this.otherTournaments = data)
+    },
+    findPlayerInOtherTournaments (player) {
+      let otherTournaments = {}
+      for (let t in this.otherTournaments) {
+        for (let p in t.participants) {
+          console.log(p.name, player)
+          if (p.name === player) {
+            otherTournaments[t.url] = player
+            break
+          }
+        }
+      }
+      return otherTournaments
     },
     formatDateAsTimeOnly (date) {
       const d = new Date(date)

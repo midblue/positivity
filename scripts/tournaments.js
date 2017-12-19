@@ -10,7 +10,7 @@ const Tournaments = {}
 
 async function getTournament (url) {
   if (Tournaments[url]) {
-    console.log('Presaved tournament')
+    console.log('Loading presaved tournament', Tournaments[url].name)
     return Tournaments[url]
   }
   const data = await getChallongeTournamentData(url)
@@ -19,6 +19,7 @@ async function getTournament (url) {
     id: data.id,
     url: url,
     date: data.started_at,
+    phantomHost: '',
     participantsCount: data.participants_count,
     participants: data.participants.map(p => {
       return parseParticipantData(p.participant)
@@ -32,9 +33,10 @@ async function getTournament (url) {
     const id = getIDfromName(participant, data)
     const matches = JSON.stringify(this.matches).toLowerCase()
     const inTournament = matches.indexOf(id) >= 0
-    console.log(participant, 'is', inTournament ? '' : 'not', 'in', this.url)
-    if (inTournament)
+    if (inTournament){
+      console.log(participant, 'also participated in', this.name)
       return this
+    }
     else
       return null
   }
@@ -52,7 +54,6 @@ async function getTournament (url) {
         host = host.substring(host.indexOf('Hosted by') + 14)
         host = host.substring(host.indexOf('users/') + 6)
         host = host.substring(0, host.indexOf('"'))
-        console.log('Host found:', host)
         instance.exit()
         resolve(host)
       }) ()
@@ -61,14 +62,15 @@ async function getTournament (url) {
 
   newTournament.host = function () {
     return new Promise((resolve, reject) => {
-      if (this.phantomHost){
-        console.log('Presaved host')
+      if (this.phantomHost !== ''){
+        console.log('Presaved host for', this.name + ':', this.phantomHost)
         resolve(this.phantomHost)
       }
       else {
-        console.log('Phantom getting host of', this.url, '...')
+        console.log('Phantom getting host of', this.name, '...')
         this.phantomGetHost()
         .then(host => {
+          console.log('Phantom found host of', this.name + ':', host)
           this.phantomHost = host
           resolve(host)
         })
