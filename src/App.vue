@@ -53,9 +53,9 @@ export default {
   data () {
     return {
       apiURL: './api',
-      tournament: '3945862',//'lieswkev',
-      participant: 'Armada',//'watch',
-      typedParticipant: 'Armada',//'watch',
+      tournament: 'sqd0djjc',//'lieswkev',
+      participant: 'Hungrybox',//'watch',
+      typedParticipant: 'Hungrybox',//'watch',
       tournamentData: {},
       otherTournaments: {},
     }
@@ -167,17 +167,21 @@ export default {
       .then(data => this.otherTournaments = data)
     },
     findPlayerInOtherTournaments (player) {
-      let otherTournaments = {}
+      let OTs = {}
       for (let t in this.otherTournaments) {
-        for (let p in t.participants) {
-          console.log(p.name, player)
-          if (p.name === player) {
-            otherTournaments[t.url] = player
+        for (let p in this.otherTournaments[t].participants) {
+          if (this.otherTournaments[t].participants[p].name === player) {
+            OTs[this.otherTournaments[t].url] = {
+              name: this.otherTournaments[t].name,
+              placing: this.otherTournaments[t].participants[p].placing,
+              seed: this.otherTournaments[t].participants[p].seed,
+              date: this.otherTournaments[t].date,
+            }
             break
           }
         }
       }
-      return otherTournaments
+      return OTs
     },
     formatDateAsTimeOnly (date) {
       const d = new Date(date)
@@ -220,7 +224,7 @@ export default {
   font-family: monospace;
   font-size: 14px;
   color: #f5f5f3;
-  background: #222;
+  background: #333;
   overflow-y: auto;
 }
 

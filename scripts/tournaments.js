@@ -53,7 +53,6 @@ async function getTournament (url) {
         let host = await page.property('content')
         host = host.substring(host.indexOf('Hosted by') + 14)
         host = host.substring(host.indexOf('users/') + 6)
-        console.log(host)
         host = host.substring(0, host.indexOf('"'))
         instance.exit()
         resolve(host)
