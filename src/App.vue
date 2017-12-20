@@ -16,16 +16,16 @@
       <br />
       <div>
         <h3>Beat (avg placing {{ beatAvgPlacing }})</h3>
-        <div v-for="win in winData">
+        <div v-for="win, index in winData">
           <span class="fade">{{ formatDateAsTimeOnly(win.time) }} </span>
-          <span>{{ win.opponent }} {{ findPlayerInOtherTournaments(win.opponent) }}</span>
+          <span>{{ win.opponent }} {{ playersInOtherTournaments[win.opponent] }}</span>
           <span class="fade sub"> {{ ordinalNumber(win.opponentPlacing) }}</span>
         </div>
       </div>
       <br />
       <div>
         <h3>Lost to (avg placing {{ lostToAvgPlacing }})</h3>
-        <div v-for="loss in lossData">
+        <div v-for="(loss in lossData">
           <span class="fade">{{ formatDateAsTimeOnly(loss.time) }} </span>
           <span>{{ loss.opponent }}</span>
           <span class="fade sub"> {{ ordinalNumber(loss.opponentPlacing) }}</span>
@@ -53,11 +53,11 @@ export default {
   data () {
     return {
       apiURL: './api',
-      tournament: 'lieswkev',
-      participant: 'watch',
-      typedParticipant: 'watch',
+      tournament: '3945862',//'lieswkev',
+      participant: 'Armada',//'watch',
+      typedParticipant: 'Armada',//'watch',
       tournamentData: {},
-      otherTournaments: {}
+      otherTournaments: {},
     }
   },
   computed: {
@@ -109,6 +109,9 @@ export default {
       }
       return data
     },
+    allMatches () {
+      return this.winData.concat(this.lossData)
+    },
     beat () {
       return this.winData ? this.winData.map((win) => win.opponent) : []
     },
@@ -135,6 +138,16 @@ export default {
       this.lossData.forEach(l => { total += l.opponentPlacing })
       return (total / this.lossData.length).toFixed(2)
     },
+    playersInOtherTournaments () {
+      let pInOtherT = {}
+      for (let m in this.allMatches) {
+        const thisPlayer = this.findPlayerInOtherTournaments(this.allMatches[m].opponent)
+        console.log(this.allMatches[m].opponent, thisPlayer)
+        if (Object.keys(thisPlayer).length > 0)
+          pInOtherT[this.allMatches[m].opponent] = thisPlayer
+      }
+      return pInOtherT
+    }
   },
   mounted () {
     this.APIQuery()
@@ -206,8 +219,8 @@ export default {
   padding: 60px;
   font-family: monospace;
   font-size: 14px;
-  color: #222;
-  background: #f5f5f3;
+  color: #f5f5f3;
+  background: #222;
   overflow-y: auto;
 }
 
