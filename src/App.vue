@@ -1,210 +1,203 @@
 <template>
   <div id="app">
-    <form v-on:submit.prevent="APIQuery">
-      <input v-model="tournament" />
-      <input v-model="typedParticipant" />
+    <h1>{{ user }}</h1>
+    <form v-on:submit.prevent="getTournamentAndSiblings">
+      <div>Add additional tournaments</div>
+      <input v-model="typedTournament" />
       <button type="submit">
-        Go
+        Add
       </button>
     </form>
     <br />
-    <br />
-    <div v-if="tournamentData">
-      <h2>{{ participant }} got {{ placingOrdinal }}</h2>
-      <div>of {{ totalParticipants }} entrants (top {{ parseInt(100 * placing / totalParticipants) }}%)</div>
-      <div>at {{ tournamentName }}</div>
-      <br />
-      <div>
-        <h3>Beat (avg placing {{ beatAvgPlacing }})</h3>
-        <div v-for="win, index in winData">
-          <span class="fade">{{ formatDateAsTimeOnly(win.time) }} </span>
-          <span>{{ win.opponent }} {{ playersInOtherTournaments[win.opponent] }}</span>
-          <span class="fade sub"> {{ ordinalNumber(win.opponentPlacing) }}</span>
-        </div>
-      </div>
-      <br />
-      <div>
-        <h3>Lost to (avg placing {{ lostToAvgPlacing }})</h3>
-        <div v-for="(loss in lossData">
-          <span class="fade">{{ formatDateAsTimeOnly(loss.time) }} </span>
-          <span>{{ loss.opponent }}</span>
-          <span class="fade sub"> {{ ordinalNumber(loss.opponentPlacing) }}</span>
-        </div>
+    <h2>Level <span class="highlight">{{ Math.ceil(Math.sqrt(points.total) / 3) }}</span></h2>
+    <h2>Total points: <span class="highlight">{{ points.total }}</span></h2>
+    <div v-for="t in points.tournaments">
+      <div v-for="d in t.details" class="sub">
+        <span class="highlight">+{{ d.value }}</span>
+        {{ d.desc }}
+        <span class="fade">({{ d.context }})</span>
       </div>
     </div>
     <br />
-    <div v-if="otherTournaments.length">
-      <div>
-        We also found
-        <strong>{{ participant }}</strong>
-        in 
-        <strong>{{ otherTournaments.length }}</strong>
-        related tournaments.
+    <div>Potential future points:</div>
+    <div class="sub">Attendance streak</div>
+    <div class="sub">Bounce back</div>
+    <div class="sub">Gain a rival!</div>
+    <br />
+    <br />
+    <div v-for="t in tournaments">
+      <h2>
+        {{ t.name }}
+        <span class="highlight sub">
+          +{{ points.tournaments[t.url].total }} points!
+        </span>
+      </h2>
+      <div>{{ moment(t.date).fromNow() }}</div>
+      <h3>You got {{ ordinalNumber(t.placing) }}</h3>
+      <div>of {{ t.totalParticipants }} entrants (top {{ parseInt(100 * t.placing / t.totalParticipants) }}%)</div>
+      <div v-if="t.winData.length > 0">
+        <h3>You beat (avg placing {{ beatAvgPlacing(user, t) }})</h3>
+        <div v-for="m, index in t.winData">
+          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
+          <span>{{ m.opponent }}</span>
+          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+        </div>
       </div>
-    </div>
-    <div v-else class="fade">
-      Searching related tournaments...
+      <div v-if="t.lossData.length > 0">
+        <h3>You lost to (avg placing {{ lostToAvgPlacing(user, t) }})</h3>
+        <div v-for="(m in t.lossData">
+          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
+          <span>{{ m.opponent }}
+          {{ findPlayerInAllLoadedTournaments(m.opponent).map(u => u.url === t.url ? null : u.placing).filter(v => v).join(', ') }}</span>
+          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+        </div>
+      </div>
+      <br />
+      <br />
     </div>
   </div>
 </template>
 
 <script>
+import moment from 'Moment'
 export default {
   data () {
     return {
       apiURL: './api',
-      tournament: 'sqd0djjc',//'lieswkev',
-      participant: 'Hungrybox',//'watch',
-      typedParticipant: 'Hungrybox',//'watch',
-      tournamentData: {},
-      otherTournaments: {},
+      typedTournament: '7cx6wwa2',//'lieswkev',//'sqd0djjc',
+      user: 'jasp',//'Hungrybox',
+      rawTournamentData: [],
     }
   },
   computed: {
-    participantElement () {
-      if (!this.tournamentData[this.tournament]) return
-      return this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.name === this.participant ? 1 : 0
-      })[0]
-    },
-    tournamentName () {
-      if (!this.tournamentData[this.tournament]) return
-      return this.tournamentData[this.tournament].name
-    },
-    totalParticipants () {
-      if (!this.tournamentData[this.tournament]) return
-      return this.tournamentData[this.tournament].participants.length
-    },
-    id () {
-      if (!this.tournamentData[this.tournament]) return
-      return this.participantElement.id
-    },
-    winData () {
-      const tournament = this.tournamentData[this.tournament]
-      if (!tournament) return
-      let data = []
-      for (let m in tournament.matches){
-        if (tournament.matches[m].winnerId === this.id){
-          data.push({
-            ...tournament.matches[m],
-            opponent: this.getNameFromID(tournament.matches[m].loserId),
-            opponentPlacing: this.getPlacing(tournament.matches[m].loserId),
-          })
+    tournaments () {
+      const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date)
+      for (let t in tournaments) {
+        const winData = this.winData(this.user, tournaments[t])
+        const lossData = this.lossData(this.user, tournaments[t])
+        tournaments[t] = {
+          ...tournaments[t],
+          winData: winData,
+          lossData: lossData,
+          beat: winData ? winData.map(m => m.opponent) : [],
+          lostTo: lossData ? lossData.map(m => m.opponent) : [],
+          placing: this.getPlacing(this.user, tournaments[t]),
+          totalParticipants: tournaments[t].participants.length,
+          userMatches: [...winData, ...lossData],
         }
       }
-      return data
+      return tournaments
     },
-    lossData () {
-      const tournament = this.tournamentData[this.tournament]
-      if (!tournament) return
-      let data = []
-      for (let m in tournament.matches){
-        if (tournament.matches[m].loserId === this.id){
-          data.push({
-            ...tournament.matches[m],
-            opponent: this.getNameFromID(tournament.matches[m].winnerId),
-            opponentPlacing: this.getPlacing(tournament.matches[m].winnerId),
-          })
-        }
+    points () {
+      const points = {}
+      for (let t of this.tournaments) {
+        const details = []
+        details.push({ value: 20, desc: 'Participated in a tournament', context: t.name })
+        if (t.totalParticipants < 20) details.push({ value: 5, desc: 'Supporting the local scene', context: 'small tournament' })
+        else if (t.totalParticipants > 200) details.push({ value: 10, desc: 'Getting in the mix', context: 'major tournament' })
+        for (let m of t.winData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Won a game', context: `${m.opponent}` })
+        for (let m of t.lossData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Took an L', context: `${m.opponent}` })
+        let total = 0
+        details.forEach(p => {
+          total += p.value
+        })
+        points[t.url] = { total: total, details: details }
       }
-      return data
-    },
-    allMatches () {
-      return this.winData.concat(this.lossData)
-    },
-    beat () {
-      return this.winData ? this.winData.map((win) => win.opponent) : []
-    },
-    lostTo () {
-      return this.lossData ? this.lossData.map((loss) => loss.opponent) : []
-    },
-    placing () {
-      if (!this.tournamentData[this.tournament]) return
-      return this.participantElement.placing
-    },
-    placingOrdinal () {
-      if (!this.placing) return
-      return this.ordinalNumber(this.placing)
-    },
-    beatAvgPlacing () {
-      if (!this.tournamentData[this.tournament]) return
       let total = 0
-      this.winData.forEach(w => { total += w.opponentPlacing })
-      return (total / this.winData.length).toFixed(2)
-    },
-    lostToAvgPlacing () {
-      if (!this.tournamentData[this.tournament]) return
-      let total = 0
-      this.lossData.forEach(l => { total += l.opponentPlacing })
-      return (total / this.lossData.length).toFixed(2)
-    },
-    playersInOtherTournaments () {
-      let pInOtherT = {}
-      for (let m in this.allMatches) {
-        const thisPlayer = this.findPlayerInOtherTournaments(this.allMatches[m].opponent)
-        console.log(this.allMatches[m].opponent, thisPlayer)
-        if (Object.keys(thisPlayer).length > 0)
-          pInOtherT[this.allMatches[m].opponent] = thisPlayer
+      for (let p in points) total += points[p].total
+      return {
+        total: total,
+        tournaments: points,
       }
-      return pInOtherT
-    }
+    },
   },
   mounted () {
-    this.APIQuery()
+    this.user = window.localStorage.getItem('user') || 'jasp'
+    this.getTournamentAndSiblings()
   },
   methods: {
-    APIQuery () {
-      //console.log('query')
-      fetch(`${this.apiURL}/tournament/${this.tournament}`)
+    getTournamentAndSiblings () {
+      fetch(`${this.apiURL}/tournament/${this.typedTournament}`)
+      .then(res => res.json())
+      .then(data => this.rawTournamentData.push(data))
+      fetch(`${this.apiURL}/alsoCompetedIn/${this.typedTournament}/${this.user}`)
       .then(res => res.json())
       .then(data => {
-        this.participant = this.typedParticipant
-        this.$set(this.tournamentData, this.tournament, data)
+        for (let t of data)
+          this.rawTournamentData.push(t)
       })
-      this.otherTournaments = {}
-      fetch(`${this.apiURL}/alsoCompetedIn/${this.tournament}/${this.typedParticipant}`)
-      .then(res => res.json())
-      .then(data => this.otherTournaments = data)
     },
-    findPlayerInOtherTournaments (player) {
-      let OTs = {}
-      for (let t in this.otherTournaments) {
-        for (let p in this.otherTournaments[t].participants) {
-          if (this.otherTournaments[t].participants[p].name === player) {
-            OTs[this.otherTournaments[t].url] = {
-              name: this.otherTournaments[t].name,
-              placing: this.otherTournaments[t].participants[p].placing,
-              seed: this.otherTournaments[t].participants[p].seed,
-              date: this.otherTournaments[t].date,
-            }
+    id (inTournament) {
+      for (let t of rawTournamentData)
+      return this.participantElement.id
+    },
+    findPlayerInAllLoadedTournaments (player) {
+      let inAllTournaments = []
+      for (let t of this.tournaments) {
+        for (let p of t.participants) {
+          if (p.name.toLowerCase() === player.toLowerCase()) {
+            inAllTournaments.push({
+              name: t.name,
+              placing: p.placing,
+              seed: p.seed,
+              date: t.date,
+              url: t.url,
+            })
             break
           }
         }
       }
-      return OTs
+      return inAllTournaments
+    },
+    winData (name, tournament) {
+      const id = this.getIDfromName(name, tournament)
+      return tournament.matches.map(m => {
+        if (m.winnerId === id){
+          return {
+            ...m,
+            opponent: this.getNameFromID(m.loserId, tournament),
+            opponentPlacing: this.getPlacing(m.loserId, tournament),
+          }
+        }
+      }).filter(m => m)
+    },
+    lossData (name, tournament) {
+      const id = this.getIDfromName(name, tournament)
+      return tournament.matches.map(m => {
+        if (m.loserId === id){
+          return {
+            ...m,
+            opponent: this.getNameFromID(m.winnerId, tournament),
+            opponentPlacing: this.getPlacing(m.winnerId, tournament),
+          }
+        }
+      }).filter(m => m)
+    },
+    beatAvgPlacing (name, tournament) {
+      let total = 0
+      const winData = this.winData(name, tournament)
+      winData.forEach(w => total += w.opponentPlacing)
+      return (total / winData.length).toFixed(2)
+    },
+    lostToAvgPlacing (name, tournament) {
+      let total = 0
+      const lossData = this.lossData(name, tournament)
+      lossData.forEach(l => total += l.opponentPlacing)
+      return (total / lossData.length).toFixed(2)
+    },
+    getNameFromID (id, tournament) {
+      return tournament.participants.find(p => p.id === id).name
+    },
+    getIDfromName (name, tournament) {
+      return tournament.participants.find(p => p.name === name).id
+    },
+    getPlacing (participant, tournament) {
+      const id = typeof participant === 'number' ? participant : this.getIDfromName(participant, tournament)
+      return tournament.participants.find(p => p.id === id).placing
     },
     formatDateAsTimeOnly (date) {
       const d = new Date(date)
       return d.getHours() + ':' + d.getMinutes()
-    },
-    getNameFromID (id) {
-      const foundName = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.id === id ? 1 : 0
-      })
-      if (foundName.length > 0) return foundName[0].name
-    },
-    getIDfromName (name) {
-      const foundName = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.display_name === name ? 1 : 0
-      })
-      if (foundName.length > 0) return foundName[0].id
-    },
-    getPlacing (participant) {
-      const id = typeof participant === 'number' ? participant : this.getIDfromName(participant)
-      const foundID = this.tournamentData[this.tournament].participants.filter((p) => {
-        return p.id === id ? 1 : 0
-      })
-      if (foundID.length > 0) return foundID[0].placing
     },
     ordinalNumber (number) {
       if (number % 10 === 1 && number % 100 !== 11) return number + 'st'
@@ -212,6 +205,9 @@ export default {
       if (number % 10 === 3 && number % 100 !== 13) return number + 'rd'
       return number + 'th'
     },
+    moment (arg) {
+      return moment(arg)
+    }
   },
 }
 </script>
@@ -220,7 +216,7 @@ export default {
 #app {
   width: 100%;
   height: 100vh;
-  padding: 60px;
+  padding: 30px 60px 120px 60px;
   font-family: monospace;
   font-size: 14px;
   color: #f5f5f3;
