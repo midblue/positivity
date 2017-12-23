@@ -1,7 +1,7 @@
 
 const fetch = require('node-fetch')
 const apiKey = require('../apikey_local.json')
-const phantom = require('phantom')
+const ssr = require('../scripts/ssr.js')
 const Players = require('../scripts/players.js')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
@@ -41,22 +41,13 @@ async function getTournament (url) {
       return null
   }
 
-  newTournament.phantomGetHost = function () {
-    return new Promise((resolve, reject) => {
-      (async () => {
-        const instance = await phantom.create()
-        const page = await instance.createPage()
-        await page.on('onResourceRequested', (requestData) => {
-          //console.info('Requesting', requestData.url)
-        })
-        const status = await page.open(`http://challonge.com/${this.url}`)
-        let host = await page.property('content')
-        host = host.substring(host.indexOf('Hosted by') + 14)
-        host = host.substring(host.indexOf('users/') + 6)
-        host = host.substring(0, host.indexOf('"'))
-        instance.exit()
-        resolve(host)
-      }) ()
+  newTournament.phantomGetHost = async function () {
+    return await ssr.get(`http://challonge.com/${this.url}`)
+    .then(html => {
+      let host = html.substring(html.indexOf('Hosted by') + 14)
+      host = host.substring(host.indexOf('users/') + 6)
+      host = host.substring(0, host.indexOf('"'))
+      return host
     })
   }
 

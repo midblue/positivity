@@ -1,14 +1,15 @@
 <template>
   <div id="app">
-    <h1>{{ user }}</h1>
     <form v-on:submit.prevent="getTournamentAndSiblings">
       <div>Add additional tournaments</div>
+      <div class="sub fade">(We'll also automatically pull other tournaments you're in from that host)</div>
       <input v-model="typedTournament" />
       <button type="submit">
         Add
       </button>
     </form>
     <br />
+    <h1>{{ user }}</h1>
     <h2>Level <span class="highlight">{{ Math.ceil(Math.sqrt(points.total) / 3) }}</span></h2>
     <h2>Total points: <span class="highlight">{{ points.total }}</span></h2>
     <div v-for="t in points.tournaments">
