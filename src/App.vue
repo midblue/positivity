@@ -10,15 +10,24 @@
     </form>
     <br />
     <h1>{{ user }}</h1>
-    <h2>Level <span class="highlight">{{ Math.ceil(Math.sqrt(points.total) / 3) }}</span></h2>
-    <h2>Total points: <span class="highlight">{{ points.total }}</span></h2>
-    <div v-for="t in points.tournaments">
-      <div v-for="d in t.details" class="sub">
-        <span class="highlight">+{{ d.value }}</span>
-        {{ d.desc }}
-        <span class="fade">({{ d.context }})</span>
-      </div>
-    </div>
+    <h2>Level
+      <i-count-up
+        :start="0"
+        :end="Math.ceil(Math.sqrt(points.total) / 3)"
+        :decimals="0"
+        :duration="5"
+        class="highlight"
+      />
+    </h2>
+    <h2>Total points:
+      <i-count-up
+        :start="0"
+        :end="points.total"
+        :decimals="0"
+        :duration="5"
+        class="highlight"
+      />
+    </h2>
     <br />
     <div>Potential future points:</div>
     <div class="sub">Attendance streak</div>
@@ -26,51 +35,32 @@
     <div class="sub">Gain a rival!</div>
     <br />
     <br />
-    <div v-for="t in tournaments">
-      <h2>
-        {{ t.name }}
-        <span class="highlight sub">
-          +{{ points.tournaments[t.url].total }} points!
-        </span>
-      </h2>
-      <div>{{ moment(t.date).fromNow() }}</div>
-      <h3>You got {{ ordinalNumber(t.placing) }}</h3>
-      <div>of {{ t.totalParticipants }} entrants (top {{ parseInt(100 * t.placing / t.totalParticipants) }}%)</div>
-      <div v-if="t.winData.length > 0">
-        <h3>You beat (avg placing {{ beatAvgPlacing(user, t) }})</h3>
-        <div v-for="m, index in t.winData">
-          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
-          <span>{{ m.opponent }}</span>
-          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
-        </div>
-      </div>
-      <div v-if="t.lossData.length > 0">
-        <h3>You lost to (avg placing {{ lostToAvgPlacing(user, t) }})</h3>
-        <div v-for="(m in t.lossData">
-          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
-          <span>{{ m.opponent }}
-          {{ findPlayerInAllLoadedTournaments(m.opponent).map(u => u.url === t.url ? null : u.placing).filter(v => v).join(', ') }}</span>
-          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
-        </div>
-      </div>
-      <br />
-      <br />
-    </div>
+    <transition-group name="fade">
+      <Tournament
+        v-for="t, index in tournaments"
+        :key="index"
+        :tournamentData="t"
+        :allTournaments="tournaments"
+        :points="points.tournaments[t.url]"
+      />
+    </transition-group>
   </div>
 </template>
 
 <script>
-import moment from 'Moment'
+import Tournament from './components/Tournament.vue'
+import ICountUp from 'vue-countup-v2'
 export default {
+  components: { ICountUp, Tournament, },
   data () {
     return {
       apiURL: './api',
       typedTournament: '7cx6wwa2',//'lieswkev',//'sqd0djjc',
-      user: 'jasp',//'Hungrybox',
       rawTournamentData: [],
     }
   },
   computed: {
+    user () { return this.$store.state.user },
     tournaments () {
       const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date)
       for (let t in tournaments) {
@@ -113,7 +103,9 @@ export default {
     },
   },
   mounted () {
-    this.user = window.localStorage.getItem('user') || 'jasp'
+    this.$store.commit('set', {
+      user: window.localStorage.getItem('user') || 'jasp',
+    })
     this.getTournamentAndSiblings()
   },
   methods: {
@@ -128,30 +120,8 @@ export default {
           this.rawTournamentData.push(t)
       })
     },
-    id (inTournament) {
-      for (let t of rawTournamentData)
-      return this.participantElement.id
-    },
-    findPlayerInAllLoadedTournaments (player) {
-      let inAllTournaments = []
-      for (let t of this.tournaments) {
-        for (let p of t.participants) {
-          if (p.name.toLowerCase() === player.toLowerCase()) {
-            inAllTournaments.push({
-              name: t.name,
-              placing: p.placing,
-              seed: p.seed,
-              date: t.date,
-              url: t.url,
-            })
-            break
-          }
-        }
-      }
-      return inAllTournaments
-    },
     winData (name, tournament) {
-      const id = this.getIDfromName(name, tournament)
+      const id = this.getIDFromName(name, tournament)
       return tournament.matches.map(m => {
         if (m.winnerId === id){
           return {
@@ -163,7 +133,7 @@ export default {
       }).filter(m => m)
     },
     lossData (name, tournament) {
-      const id = this.getIDfromName(name, tournament)
+      const id = this.getIDFromName(name, tournament)
       return tournament.matches.map(m => {
         if (m.loserId === id){
           return {
@@ -174,41 +144,16 @@ export default {
         }
       }).filter(m => m)
     },
-    beatAvgPlacing (name, tournament) {
-      let total = 0
-      const winData = this.winData(name, tournament)
-      winData.forEach(w => total += w.opponentPlacing)
-      return (total / winData.length).toFixed(2)
-    },
-    lostToAvgPlacing (name, tournament) {
-      let total = 0
-      const lossData = this.lossData(name, tournament)
-      lossData.forEach(l => total += l.opponentPlacing)
-      return (total / lossData.length).toFixed(2)
-    },
     getNameFromID (id, tournament) {
       return tournament.participants.find(p => p.id === id).name
     },
-    getIDfromName (name, tournament) {
+    getIDFromName (name, tournament) {
       return tournament.participants.find(p => p.name === name).id
     },
     getPlacing (participant, tournament) {
-      const id = typeof participant === 'number' ? participant : this.getIDfromName(participant, tournament)
+      const id = typeof participant === 'number' ? participant : this.getIDFromName(participant, tournament)
       return tournament.participants.find(p => p.id === id).placing
     },
-    formatDateAsTimeOnly (date) {
-      const d = new Date(date)
-      return d.getHours() + ':' + d.getMinutes()
-    },
-    ordinalNumber (number) {
-      if (number % 10 === 1 && number % 100 !== 11) return number + 'st'
-      if (number % 10 === 2 && number % 100 !== 12) return number + 'nd'
-      if (number % 10 === 3 && number % 100 !== 13) return number + 'rd'
-      return number + 'th'
-    },
-    moment (arg) {
-      return moment(arg)
-    }
   },
 }
 </script>

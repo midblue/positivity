@@ -5,17 +5,28 @@ const ssr = require('../scripts/ssr.js')
 const Players = require('../scripts/players.js')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
+const db = require('monk')('localhost/positivity')
+const dbTournaments = db.get('tournaments')
 
-const Tournaments = {}
+// load all tournaments from database on startup
+dbTournaments.find({}).then(foundDbTournaments => {
+  console.log('Found', foundDbTournaments.length, 'tournaments in database.')
+})
 
 async function getTournament (url) {
-  if (Tournaments[url]) {
-    console.log('Loading presaved tournament', Tournaments[url].name)
-    return Tournaments[url]
+  const savedData = await dbTournaments.findOne({ url: url })
+  if (savedData) {
+    console.log('Loading presaved tournament', savedData.name)
+    return {
+      ...savedData,
+      ...tournamentMethods,
+    }
   }
+
   const data = await getChallongeTournamentData(url)
-  const newTournament = {
+  let newTournament = {
     name: data.name,
+    rawData: data,
     id: data.id,
     url: url,
     date: data.started_at,
@@ -29,44 +40,9 @@ async function getTournament (url) {
     }),
   }
 
-  newTournament.isUserInTournament = function (participant) {
-    const id = getIDfromName(participant, data)
-    const matches = JSON.stringify(this.matches).toLowerCase()
-    const inTournament = matches.indexOf(id) >= 0
-    if (inTournament){
-      console.log(participant, 'also participated in', this.name)
-      return this
-    }
-    else
-      return null
-  }
-
-  newTournament.phantomGetHost = async function () {
-    return await ssr.get(`http://challonge.com/${this.url}`)
-    .then(html => {
-      let host = html.substring(html.indexOf('Hosted by') + 14)
-      host = host.substring(host.indexOf('users/') + 6)
-      host = host.substring(0, host.indexOf('"'))
-      return host
-    })
-  }
-
-  newTournament.host = function () {
-    return new Promise((resolve, reject) => {
-      if (this.phantomHost !== ''){
-        console.log('Presaved host for', this.name + ':', this.phantomHost)
-        resolve(this.phantomHost)
-      }
-      else {
-        console.log('Phantom getting host of', this.name, '...')
-        this.phantomGetHost()
-        .then(host => {
-          console.log('Phantom found host of', this.name + ':', host)
-          this.phantomHost = host
-          resolve(host)
-        })
-      }
-    })
+  newTournament = {
+    ...newTournament,
+    ...tournamentMethods,
   }
 
   // save player data
@@ -92,8 +68,55 @@ async function getTournament (url) {
   })
 
   // save it
-  Tournaments[url] = newTournament
+  dbTournaments.insert(newTournament)
   return newTournament
+}
+
+const tournamentMethods = {
+  isUserInTournament (participant) {
+    const id = getIDfromName(participant, this.rawData)
+    const matches = JSON.stringify(this.matches).toLowerCase()
+    const inTournament = matches.indexOf(id) >= 0
+    if (inTournament){
+      console.log(participant, 'also participated in', this.name)
+      return this
+    }
+    else
+      return null
+  },
+
+  async phantomGetHost () {
+    try {
+      const html = await ssr.get(`http://challonge.com/${this.url}`)
+      let host = html.substring(html.indexOf('Hosted by') + 14)
+      host = host.substring(host.indexOf('users/') + 6)
+      host = host.substring(0, host.indexOf('"'))
+      return host
+    } catch (e) {
+      return console.log('Unable to get host.')
+    }
+  },
+
+  host () {
+    return new Promise((resolve, reject) => {
+      if (this.phantomHost !== ''){
+        console.log('Presaved host for', this.name + ':', this.phantomHost)
+        resolve(this.phantomHost)
+      }
+      else {
+        console.log('Phantom getting host of', this.name, '...')
+        this.phantomGetHost()
+        .then(host => {
+          console.log('Phantom found host of', this.name + ':', host)
+          dbTournaments.update({ url: this.url }, {
+            ...this,
+            phantomHost: host,
+          })
+          resolve(host)
+        })
+      }
+    })
+  },
 }
 
 function getChallongeTournamentData (tournament) {

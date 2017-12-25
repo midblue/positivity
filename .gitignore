@@ -13,3 +13,6 @@ yarn-error.log
 
 # challonge API key
 apikey_local.json
+
+#db
+/data/
