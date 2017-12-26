@@ -1,34 +1,11 @@
 <template>
   <div id="app">
-    <form v-on:submit.prevent="getTournamentAndSiblings">
-      <div>Add additional tournaments</div>
-      <div class="sub fade">(We'll also automatically pull other tournaments you're in from that host)</div>
-      <input v-model="typedTournament" />
-      <button type="submit">
-        Add
-      </button>
-    </form>
-    <br />
-    <h1>{{ user }}</h1>
-    <h2>Level
-      <i-count-up
-        :start="0"
-        :end="Math.ceil(Math.sqrt(points.total) / 3)"
-        :decimals="0"
-        :duration="5"
-        class="highlight"
-      />
-    </h2>
-    <h2>Total points:
-      <i-count-up
-        :start="0"
-        :end="points.total"
-        :decimals="0"
-        :duration="5"
-        class="highlight"
-      />
-    </h2>
-    <br />
+    <AddTournament
+      v-on:addTournamentData="addTournamentData"
+    />
+    <UserInfo
+      :points="points"
+    />
     <div>Potential future points:</div>
     <div class="sub">Attendance streak</div>
     <div class="sub">Bounce back</div>
@@ -48,14 +25,13 @@
 </template>
 
 <script>
+import AddTournament from './components/AddTournament.vue'
+import UserInfo from './components/UserInfo.vue'
 import Tournament from './components/Tournament.vue'
-import ICountUp from 'vue-countup-v2'
 export default {
-  components: { ICountUp, Tournament, },
+  components: { Tournament, AddTournament, UserInfo, },
   data () {
     return {
-      apiURL: './api',
-      typedTournament: '7cx6wwa2',//'lieswkev',//'sqd0djjc',
       rawTournamentData: [],
     }
   },
@@ -106,19 +82,10 @@ export default {
     this.$store.commit('set', {
       user: window.localStorage.getItem('user') || 'jasp',
     })
-    this.getTournamentAndSiblings()
   },
   methods: {
-    getTournamentAndSiblings () {
-      fetch(`${this.apiURL}/tournament/${this.typedTournament}`)
-      .then(res => res.json())
-      .then(data => this.rawTournamentData.push(data))
-      fetch(`${this.apiURL}/alsoCompetedIn/${this.typedTournament}/${this.user}`)
-      .then(res => res.json())
-      .then(data => {
-        for (let t of data)
-          this.rawTournamentData.push(t)
-      })
+    addTournamentData (data) {
+      this.rawTournamentData.push(data)
     },
     winData (name, tournament) {
       const id = this.getIDFromName(name, tournament)
