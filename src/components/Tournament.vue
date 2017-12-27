@@ -2,17 +2,17 @@
   <div class="tournament">
     <h2>
       {{ tournamentData.name }}
-      <span class="highlight sub">
-        +<i-count-up
-          :start="0"
-          :end="points.total"
-          :decimals="0"
-          :duration="5"
-        />
-        points!
-      </span>
+      <span class="sub fade">({{ moment(tournamentData.date).fromNow() }})</span>
     </h2>
-    <div>{{ moment(tournamentData.date).fromNow() }}</div>
+    <h2 class="highlight">
+      +<i-count-up
+        :start="0"
+        :end="points.total"
+        :decimals="0"
+        :duration="5"
+      />
+      points!
+    </h2>
     <div v-for="d in points.details" class="sub">
       <span class="highlight">+{{ d.value }}</span>
       {{ d.desc }}
@@ -108,6 +108,7 @@ export default {
 <style scoped lang="scss">
 .tournament {
   margin-bottom: 30px;
+  margin-right: 30px;
   background: rgba(white, .05);
   padding: 30px;
 }

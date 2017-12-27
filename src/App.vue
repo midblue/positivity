@@ -1,35 +1,24 @@
 <template>
   <div id="app">
-    <AddTournament
+    <Header
       v-on:addTournamentData="addTournamentData"
     />
     <UserInfo
       :points="points"
     />
-    <div>Potential future points:</div>
-    <div class="sub">Attendance streak</div>
-    <div class="sub">Bounce back</div>
-    <div class="sub">Gain a rival!</div>
-    <br />
-    <br />
-    <transition-group name="fade">
-      <Tournament
-        v-for="t, index in tournaments"
-        :key="index"
-        :tournamentData="t"
-        :allTournaments="tournaments"
-        :points="points.tournaments[t.url]"
-      />
-    </transition-group>
+    <Tournaments
+      :tournaments="tournaments"
+      :points="points"
+    />
   </div>
 </template>
 
 <script>
-import AddTournament from './components/AddTournament.vue'
+import Header from './components/Header.vue'
 import UserInfo from './components/UserInfo.vue'
-import Tournament from './components/Tournament.vue'
+import Tournaments from './components/Tournaments.vue'
 export default {
-  components: { Tournament, AddTournament, UserInfo, },
+  components: { Tournaments, Header, UserInfo, },
   data () {
     return {
       rawTournamentData: [],
@@ -62,8 +51,8 @@ export default {
         details.push({ value: 20, desc: 'Participated in a tournament', context: t.name })
         if (t.totalParticipants < 20) details.push({ value: 5, desc: 'Supporting the local scene', context: 'small tournament' })
         else if (t.totalParticipants > 200) details.push({ value: 10, desc: 'Getting in the mix', context: 'major tournament' })
-        for (let m of t.winData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Won a game', context: `${m.opponent}` })
-        for (let m of t.lossData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Took an L', context: `${m.opponent}` })
+        for (let m of t.winData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Won a match', context: `${m.opponent}` })
+        for (let m of t.lossData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Played a match', context: `${m.opponent}` })
         let total = 0
         details.forEach(p => {
           total += p.value
@@ -129,7 +118,6 @@ export default {
 #app {
   width: 100%;
   height: 100vh;
-  padding: 30px 60px 120px 60px;
   font-family: monospace;
   font-size: 14px;
   color: #f5f5f3;

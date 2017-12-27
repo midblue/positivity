@@ -1,6 +1,5 @@
 <template>
   <div id="userinfo">
-    <h1>{{ user }}</h1>
     <h2>Level
       <i-count-up
         :start="0"
@@ -19,6 +18,10 @@
         class="highlight"
       />
     </h2>
+    <div>Potential future points:</div>
+    <div class="sub">Attendance streak</div>
+    <div class="sub">Bounce back</div>
+    <div class="sub">Gain a rival!</div>
   </div>
 </template>
 
@@ -46,5 +49,6 @@ export default {
 <style scoped lang="scss">
 #userinfo {
   margin-bottom: 30px;
+  padding: 0 60px;
 }
 </style>
