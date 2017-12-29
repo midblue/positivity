@@ -1,6 +1,6 @@
 <template>
   <div id="tournaments">
-    <h2>Tournaments You Competed In</h2>
+    <h2 class="fade">Tournaments You Competed In</h2>
     <transition-group
       name="fade"
       tag="div"

@@ -149,6 +149,7 @@ function parseMatchData (matchData, tournamentData) {
         won: matchData.player2_id === matchData.winner_id,
       },
     ],
+    score: [parseInt(matchData.scores_csv.substring(0, 1)), parseInt(matchData.scores_csv.substring(matchData.scores_csv.length))],
     winnerId: matchData.winner_id,
     loserId: matchData.loser_id,
     winnerName: getNameFromID(matchData.winner_id, tournamentData),

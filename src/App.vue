@@ -17,6 +17,8 @@
 import Header from './components/Header.vue'
 import UserInfo from './components/UserInfo.vue'
 import Tournaments from './components/Tournaments.vue'
+import points from './scripts/points.js'
+
 export default {
   components: { Tournaments, Header, UserInfo, },
   data () {
@@ -45,26 +47,7 @@ export default {
       return tournaments
     },
     points () {
-      const points = {}
-      for (let t of this.tournaments) {
-        const details = []
-        details.push({ value: 20, desc: 'Participated in a tournament', context: t.name })
-        if (t.totalParticipants < 20) details.push({ value: 5, desc: 'Supporting the local scene', context: 'small tournament' })
-        else if (t.totalParticipants > 200) details.push({ value: 10, desc: 'Getting in the mix', context: 'major tournament' })
-        for (let m of t.winData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Won a match', context: `${m.opponent}` })
-        for (let m of t.lossData) details.push({ value: Math.ceil(((t.totalParticipants - m.opponentPlacing) / t.totalParticipants * 10) + 2), desc: 'Played a match', context: `${m.opponent}` })
-        let total = 0
-        details.forEach(p => {
-          total += p.value
-        })
-        points[t.url] = { total: total, details: details }
-      }
-      let total = 0
-      for (let p in points) total += points[p].total
-      return {
-        total: total,
-        tournaments: points,
-      }
+      return points(this.tournaments)
     },
   },
   mounted () {

@@ -9,7 +9,7 @@
         :start="0"
         :end="points.total"
         :decimals="0"
-        :duration="5"
+        :duration="3"
       />
       points!
     </h2>
@@ -107,10 +107,12 @@ export default {
 
 <style scoped lang="scss">
 .tournament {
+  flex: 1;
+  min-width: 400px;
   margin-bottom: 30px;
   margin-right: 30px;
-  background: rgba(white, .05);
-  padding: 30px;
+  //background: rgba(white, .05);
+  //padding: 30px;
 }
 
 </style>

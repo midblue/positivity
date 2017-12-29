@@ -32,7 +32,7 @@ export default {
 #header {
   width: 100%;
   height: 6em;
-  background: #222;
+  //background: #222;
   padding: 0 60px;
   display: flex;
   align-items: center;
