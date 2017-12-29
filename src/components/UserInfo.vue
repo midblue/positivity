@@ -1,44 +1,55 @@
 <template>
   <div id="userinfo">
-    <h2>Level
-      <i-count-up
-        :start="0"
-        :end="currentLevel"
-        :decimals="0"
-        :duration="3"
-        class="highlight"
-      />
+    <div>Upcoming Tournaments Near You</div>
+    <div class="sub">
+      Next week - 
+      <span style="text-decoration: underline;">Akihabara Weekly 2/16</span>
+    </div>
+    <div class="sub">
+      In 2 weeks - 
+      <span style="text-decoration: underline;">Friday Night Melee #20</span>
+    </div>
+    <br />
+    <h2>
+      Level
+      <span class="highlight">{{ this.currentLevel }}</span>
     </h2>
+    <div class="graphmarkers">
+      <template v-for="key in 4">
+        <div class="marker major"></div>
+        <div class="marker"></div>
+      </template>
+      <div class="marker major"></div>
+    </div>
     <div class="graphbar">
       <div
         class="fill"
-        :class="{transitiongraph: currentLevelProgress !== 0}"
+        :class="{
+          transitiongraph: currentLevelProgress !== 0,
+          week: currentLevelProgress <= thisWeekPoints,
+          month: currentLevelProgress <= thisMonthPoints,
+        }"
         :style="`width: ${(currentLevelProgress / currentLevelTotalPoints) * 100}%;`"
       >
-        {{ parseInt(currentLevelProgress) }}
+        {{ Math.round(currentLevelProgress) }}
       </div>
-      <div class="right">{{ parseInt(currentLevelTotalPoints) }}</div>
+      <div class="right">{{ Math.round(currentLevelTotalPoints) }}</div>
     </div>
     <div>
-      This Year | This Month
+      | This Year | This Month
     </div>
     <br />
     <div>Potential future points:</div>
     <div class="sub">Attendance streak</div>
     <div class="sub">Bounce back</div>
     <div class="sub">Gain a rival!</div>
-    <br />
-    <div>Upcoming Tournaments Near You</div>
-    <div class="sub" style="text-decoration: underline;">Friday Night Melee #20</div>
-    <div class="sub" style="text-decoration: underline;">Akihabara Weekly 2/16</div>
   </div>
 </template>
 
 <script>
-import ICountUp from 'vue-countup-v2'
 
 export default {
-  components: { ICountUp, },
+  components: { },
   props: [ 'points', ],
   data () {
     return {
@@ -58,9 +69,24 @@ export default {
       }
       return levels
     },
-    currentLevel () { return this.levelBreaks.findIndex(b => b >= this.displayPoints + 1) },
+    currentLevel () { return this.levelBreaks.findIndex(b => b >= this.displayPoints) },
     currentLevelTotalPoints () { return this.levelBreaks[this.currentLevel] - this.levelBreaks[this.currentLevel - 1] },
-    currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) }
+    currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) },
+    mostRecentTournamentPoints () { return this.points.tournaments[0].total },
+    aWeekAgo () { return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+    aMonthAgo () { return new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000) },
+    thisWeekPoints () {
+      if (this.points.total === 0) return 0
+      return this.points.tournaments
+        .map(t => new Date(t.date) >= this.aWeekAgo ? t.total : 0 )
+        .reduce((total, t) => total += t)
+    },
+    thisMonthPoints () {
+      if (this.points.total === 0) return 0
+      return this.points.tournaments
+        .map(t => new Date(t.date) >= this.aMonthAgo ? t.total : 0 )
+        .reduce((total, t) => total += t)
+    },
   },
   watch : {
     points (newPoints, oldPoints) {
@@ -71,21 +97,23 @@ export default {
         this.addPoints()
     },
   },
-  mounted () {},
+  mounted () {
+  },
   methods: {
     addPoints () {
       this.adding = true
       window.setTimeout(() => {
         if (this.pointsToAdd === 0)
           return this.adding = false
-        this.displayPoints++
+        let pointsToAddThisTime = ((this.points.total / (this.displayPoints || 1)) - 1) * 0.6 + (this.points.total / 1500)
+        if (pointsToAddThisTime > this.pointsToAdd) pointsToAddThisTime = this.pointsToAdd
+        this.displayPoints += pointsToAddThisTime
+        this.pointsToAdd -= pointsToAddThisTime
         this.addPoints()
-
-        this.pointsToAdd--
-      }, 50)
+      }, 40)
     },
     levelPoints (l) {
-      return ((l * 2) * l) + 10
+      return (((l * 2) * l) + 10) * 5
       //return Math.ceil(Math.sqrt(points.total) / 3) },
     },
   },
@@ -94,7 +122,7 @@ export default {
 
 <style scoped lang="scss">
 #userinfo {
-  margin-bottom: 30px;
+  margin-bottom: 60px;
   padding: 0 60px;
 }
 
@@ -104,6 +132,13 @@ export default {
 }
 
 .transitiongraph {
-  transition: all .05s linear;
+  transition: all .04s linear;
+}
+
+.month {
+  background: #0f7;
+}
+.week {
+  background: #0fd;
 }
 </style>

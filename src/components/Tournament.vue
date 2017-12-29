@@ -16,12 +16,22 @@
     <div v-for="d in points.details" class="sub">
       <span class="highlight">+{{ d.value }}</span>
       {{ d.desc }}
-      <span class="fade">({{ d.context }})</span>
+      <span v-if="d.context" class="fade">({{ d.context }})</span>
     </div>
-    <h3>You got {{ ordinalNumber(tournamentData.placing) }}</h3>
-    <div>of {{ tournamentData.totalParticipants }} entrants (top {{ parseInt(100 * tournamentData.placing / tournamentData.totalParticipants) }}%)</div>
+    <h3>
+      You got {{ ordinalNumber(tournamentData.placing) }}
+      <span class="fade">
+        of {{ tournamentData.totalParticipants }} players
+        (top {{ parseInt(100 * tournamentData.placing / tournamentData.totalParticipants) }}%)
+      </span>
+    </h3>
     <div v-if="tournamentData.winData.length > 0">
-      <h3>You beat (avg placing {{ beatAvgPlacing(user, tournamentData) }})</h3>
+      <h3>
+        beating
+        <span class="fade">
+          (avg placing {{ ordinalNumber(Math.ceil(beatAvgPlacing(user, tournamentData))) }})
+        </span>
+      </h3>
       <div v-for="m, index in tournamentData.winData">
         <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
         <span>{{ m.opponent }}</span>
@@ -29,7 +39,13 @@
       </div>
     </div>
     <div v-if="tournamentData.lossData.length > 0">
-      <h3>You lost to (avg placing {{ lostToAvgPlacing(user, tournamentData) }})</h3>
+      <h3>
+        <span v-if="tournamentData.winData.length > 0">and</span>
+        losing to
+        <span class="fade">
+          (avg placing {{ ordinalNumber(Math.floor(lostToAvgPlacing(user, tournamentData))) }})
+        </span>
+      </h3>
       <div v-for="(m in tournamentData.lossData">
         <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
         <span>{{ m.opponent }}
@@ -75,12 +91,12 @@ export default {
     beatAvgPlacing (name, tournament) {
       let total = 0
       this.tournamentData.winData.forEach(w => total += w.opponentPlacing)
-      return (total / this.tournamentData.winData.length).toFixed(2)
+      return (total / this.tournamentData.winData.length).toFixed(1)
     },
     lostToAvgPlacing (name, tournament) {
       let total = 0
       this.tournamentData.lossData.forEach(l => total += l.opponentPlacing)
-      return (total / this.tournamentData.lossData.length).toFixed(2)
+      return (total / this.tournamentData.lossData.length).toFixed(1)
     },
     getNameFromID (id, tournament) {
       return tournament.participants.find(p => p.id === id).name

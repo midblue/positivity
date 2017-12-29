@@ -3,10 +3,9 @@
 // 2: progression - points for improvement / dedication. multi-tournament
 
 export default function (tournaments) {
-	const points = {}
+	const points = []
 	for (let t of tournaments) {
-		points[t.url] = TournamentPoints(t)
-	  
+		points.push(TournamentPoints(t))
 	}
 	let total = 0
 	for (let p in points) total += points[p].total
@@ -20,7 +19,7 @@ function TournamentPoints (t) {
 	let details = []
 
 	// You showed up! Yay!
-	details.push({ value: 20, desc: 'Participated in a tournament', context: t.name })
+	details.push({ value: 20, desc: 'Participated in a tournament', type: 'concrete', })
 
 	// Tournament size
 	details.push(tournamentSizePoints(t))
@@ -37,7 +36,7 @@ function TournamentPoints (t) {
 	details.forEach(p => {
 	  total += p.value
 	})
-	return { total: total, details: details }
+	return { url: t.url, total: total, details: details, date: t.date }
 }
 
 
@@ -48,12 +47,13 @@ function tournamentSizePoints (t) {
 }
 
 function placingPoints (t) {
-	if (t.totalParticipants < 4 && t.placing == 1) return { value: 16, desc: 'You won!', context: t.name, type: 'concrete', }
+	if (t.totalParticipants < 4 && t.placing == 1) return { value: 16, desc: 'You won!', type: 'concrete', }
 	else if (t.totalParticipants < 4 && t.placing == 2) return { value: 12, desc: 'So close!', context: 'top 2 at ' + t.name, type: 'concrete', }
-	else if (t.totalParticipants < 8 && t.placing >= 4) return { value: 10, desc: 'Top 4!', context: t.name, type: 'concrete', }
-	else if (t.totalParticipants < 12 && t.placing >= 8) return { value: 8, desc: 'Top 8!', context: t.name, type: 'concrete', }
-	else if (t.totalParticipants < 20 && t.placing >= 16) return { value: 6, desc: 'Top 16!', context: t.name, type: 'concrete', }
-	else if (t.placing / t.totalParticipants <= .5) return { value: 6, desc: 'Top 50%!', context: t.name, type: 'concrete', }
+	else if (t.totalParticipants < 8 && t.placing >= 4) return { value: 10, desc: 'Top 4!', type: 'concrete', }
+	else if (t.totalParticipants < 12 && t.placing >= 8) return { value: 8, desc: 'Top 8!', type: 'concrete', }
+	else if (t.totalParticipants < 20 && t.placing >= 16) return { value: 6, desc: 'Top 16!', type: 'concrete', }
+	else if (t.placing / t.totalParticipants <= .5) return { value: 6, desc: 'Top 50%!', type: 'concrete', }
+	else if (t.placing / t.totalParticipants <= .75) return { value: 4, desc: 'Top 75%!', type: 'concrete', }
 }
 
 function wonMatch (m, t) {

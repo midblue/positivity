@@ -11,7 +11,7 @@
         :key="index"
         :tournamentData="t"
         :allTournaments="tournaments"
-        :points="points.tournaments[t.url]"
+        :points="points.tournaments.find(f => t.url === f.url)"
       />
     </transition-group>
   </div>
