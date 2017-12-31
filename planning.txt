@@ -59,10 +59,8 @@ avg placing of people that beat you
 tech directions
 ***************
 
-search all tournaments from the creator of this one
-	need to find a way to get tournament creator string
-		render on the server?
-
+compare to strong players database
+	miom top 100?
 
 
 
@@ -89,7 +87,7 @@ I was mad at Mango at that point for knocking out Chu,
 but I did talk to Alex 19 and all of that crew...
 
 
-michael?
+Michael
 the thing that sucks the worst is losing to someone whose deck sucks
 although it has happened later that i found out that there was some amazing combination in there, it just didn't come out in my matches with them
 that makes me feel better

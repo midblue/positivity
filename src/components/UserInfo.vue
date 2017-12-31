@@ -25,18 +25,20 @@
       <div
         class="fill"
         :class="{
-          transitiongraph: currentLevelProgress !== 0,
-          week: currentLevelProgress <= thisWeekPoints,
-          month: currentLevelProgress <= thisMonthPoints,
+          transitiongraph: currentLevelProgress > 0.3,
+          week: finalLevel == currentLevel && finalLevelProgress <= thisWeekPoints,
+          month: finalLevel == currentLevel && finalLevelProgress <= thisMonthPoints,
         }"
         :style="`width: ${(currentLevelProgress / currentLevelTotalPoints) * 100}%;`"
       >
-        {{ Math.round(currentLevelProgress) }}
+        {{ Math.round(currentLevelProgress - 0.4) }}
       </div>
       <div class="right">{{ Math.round(currentLevelTotalPoints) }}</div>
     </div>
-    <div>
-      | This Year | This Month
+    <div class="martopsmall">
+      <span class="all">All</span>
+      <span class="month">Month</span>
+      <span class="week">Week</span>
     </div>
     <br />
     <div>Potential future points:</div>
@@ -70,8 +72,10 @@ export default {
       return levels
     },
     currentLevel () { return this.levelBreaks.findIndex(b => b >= this.displayPoints) },
+    finalLevel () { return this.levelBreaks.findIndex(b => b >= this.points.total) },
     currentLevelTotalPoints () { return this.levelBreaks[this.currentLevel] - this.levelBreaks[this.currentLevel - 1] },
     currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) },
+    finalLevelProgress () { return (this.points.total - this.levelBreaks[this.finalLevel - 1]) },
     mostRecentTournamentPoints () { return this.points.tournaments[0].total },
     aWeekAgo () { return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     aMonthAgo () { return new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000) },
@@ -105,7 +109,7 @@ export default {
       window.setTimeout(() => {
         if (this.pointsToAdd === 0)
           return this.adding = false
-        let pointsToAddThisTime = ((this.points.total / (this.displayPoints || 1)) - 1) * 0.6 + (this.points.total / 1500)
+        let pointsToAddThisTime = ((this.points.total / (this.displayPoints || 1)) - 1) + (this.points.total / 1500)
         if (pointsToAddThisTime > this.pointsToAdd) pointsToAddThisTime = this.pointsToAdd
         this.displayPoints += pointsToAddThisTime
         this.pointsToAdd -= pointsToAddThisTime
@@ -135,10 +139,17 @@ export default {
   transition: all .04s linear;
 }
 
+.all {
+  background: #0f0;
+  color: #222;
+}
+
 .month {
   background: #0f7;
+  color: #222;
 }
 .week {
   background: #0fd;
+  color: #222;
 }
 </style>

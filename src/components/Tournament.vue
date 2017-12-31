@@ -13,44 +13,51 @@
       />
       points!
     </h2>
-    <div v-for="d in points.details" class="sub">
-      <span class="highlight">+{{ d.value }}</span>
-      {{ d.desc }}
-      <span v-if="d.context" class="fade">({{ d.context }})</span>
-    </div>
-    <h3>
-      You got {{ ordinalNumber(tournamentData.placing) }}
-      <span class="fade">
-        of {{ tournamentData.totalParticipants }} players
-        (top {{ parseInt(100 * tournamentData.placing / tournamentData.totalParticipants) }}%)
-      </span>
-    </h3>
-    <div v-if="tournamentData.winData.length > 0">
-      <h3>
-        beating
-        <span class="fade">
-          (avg placing {{ ordinalNumber(Math.ceil(beatAvgPlacing(user, tournamentData))) }})
-        </span>
-      </h3>
-      <div v-for="m, index in tournamentData.winData">
-        <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
-        <span>{{ m.opponent }}</span>
-        <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+    <div>
+      <div
+        v-for="category in points.details"
+        class="pointscategory"
+      >
+        <div v-for="point in category">
+          <span class="highlight">+{{ point.value }}</span>
+          {{ point.desc }}
+          <span v-if="point.context" class="fade">({{ point.context }})</span>
+        </div>
       </div>
     </div>
-    <div v-if="tournamentData.lossData.length > 0">
-      <h3>
-        <span v-if="tournamentData.winData.length > 0">and</span>
-        losing to
+    <div class="sub">
+      <div>
+        Placing: {{ ordinalNumber(tournamentData.placing) }}
         <span class="fade">
-          (avg placing {{ ordinalNumber(Math.floor(lostToAvgPlacing(user, tournamentData))) }})
+          of {{ tournamentData.totalParticipants }} players
+          (top {{ parseInt(100 * tournamentData.placing / tournamentData.totalParticipants) }}%)
         </span>
-      </h3>
-      <div v-for="(m in tournamentData.lossData">
-        <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
-        <span>{{ m.opponent }}
-        {{ findPlayerInAllLoadedTournaments(m.opponent).map(u => u.url === tournamentData.url ? null : u.placing).filter(v => v).join(', ') }}</span>
-        <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+      </div>
+      <div v-if="tournamentData.winData.length > 0">
+        <div>
+          Beat:
+          <span class="fade">
+            (avg placing {{ ordinalNumber(Math.ceil(beatAvgPlacing(user, tournamentData))) }})
+          </span>
+        </div>
+        <div v-for="m, index in tournamentData.winData">
+          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
+          <span>{{ m.opponent }}</span>
+          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+        </div>
+      </div>
+      <div v-if="tournamentData.lossData.length > 0">
+        <div>
+          <span v-if="tournamentData.winData.length > 0">and l</span><span v-else>L</span>ost to:
+          <span class="fade">
+            (avg placing {{ ordinalNumber(Math.floor(lostToAvgPlacing(user, tournamentData))) }})
+          </span>
+        </div>
+        <div v-for="(m in tournamentData.lossData">
+          <span class="fade">{{ formatDateAsTimeOnly(m.time) }} </span>
+          <span>{{ m.opponent }}</span>
+          <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -70,24 +77,6 @@ export default {
   },
   mounted () {},
   methods: {
-    findPlayerInAllLoadedTournaments (player) {
-      let inAllTournaments = []
-      for (let t of this.allTournaments) {
-        for (let p of t.participants) {
-          if (p.name.toLowerCase() === player.toLowerCase()) {
-            inAllTournaments.push({
-              name: t.name,
-              placing: p.placing,
-              seed: p.seed,
-              date: t.date,
-              url: t.url,
-            })
-            break
-          }
-        }
-      }
-      return inAllTournaments
-    },
     beatAvgPlacing (name, tournament) {
       let total = 0
       this.tournamentData.winData.forEach(w => total += w.opponentPlacing)
@@ -129,6 +118,10 @@ export default {
   margin-right: 30px;
   //background: rgba(white, .05);
   //padding: 30px;
+}
+
+.pointscategory {
+  margin-bottom: 24px;
 }
 
 </style>

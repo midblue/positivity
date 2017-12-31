@@ -41,13 +41,13 @@ export default {
           lostTo: lossData ? lossData.map(m => m.opponent) : [],
           placing: this.getPlacing(this.user, tournaments[t]),
           totalParticipants: tournaments[t].participants.length,
-          userMatches: [...winData, ...lossData],
+          userMatches: [...winData, ...lossData].sort((m, n) => m.date > n.date),
         }
       }
       return tournaments
     },
     points () {
-      return points(this.tournaments)
+      return points(this.tournaments, this.user)
     },
   },
   mounted () {
@@ -67,6 +67,7 @@ export default {
             ...m,
             opponent: this.getNameFromID(m.loserId, tournament),
             opponentPlacing: this.getPlacing(m.loserId, tournament),
+            won: true,
           }
         }
       }).filter(m => m)
@@ -79,6 +80,7 @@ export default {
             ...m,
             opponent: this.getNameFromID(m.winnerId, tournament),
             opponentPlacing: this.getPlacing(m.winnerId, tournament),
+            won: false,
           }
         }
       }).filter(m => m)
