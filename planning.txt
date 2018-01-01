@@ -50,8 +50,9 @@ ooh i like this
 ***************
 
 avg placing of people that beat you
-
-
+timeline view of points
+badges
+show all levels graphically
 
 
 

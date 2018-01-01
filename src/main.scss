@@ -2,12 +2,16 @@
 	box-sizing: border-box;
 }
 
-html, body{
+html, body {
   padding: 0;
   margin: 0;
-  width: 100%;
-  height: 100vh;
   overflow-x: hidden;
+}
+
+body {
+	width: 100%;
+	min-height: 100vh;
+ 	background: #333;
 }
 
 .fade {
@@ -20,6 +24,10 @@ html, body{
 
 .highlight {
 	color: #0f0;
+
+	&.alt {
+		color: #ff0;
+	}
 }
 
 .flexwrap {
@@ -62,17 +70,31 @@ html, body{
 	display: flex;
 	align-items: center;
 
-	.fill {
+	& > * {
+		z-index: 2;
+	}
+
+	.fill, .fill > div {
 		flex: 0;
 		height: 100%;
 		width: 0;
 		background: #0f0;
 		position: absolute;
-		color: #222;
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
 		padding: 6px;
+		z-index: 3;
+
+		& > div {
+			right: 0;
+			border-left: 2px solid
+		}
+
+		.label{
+			color: #222;
+			z-index: 4;
+		}
 	}
 }
 

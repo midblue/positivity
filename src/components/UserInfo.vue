@@ -1,5 +1,51 @@
 <template>
   <div id="userinfo">
+    <div v-if="points">
+      <h2>
+        Level
+        <span class="highlight">{{ currentLevel }}</span>
+        <div class="sub">{{ displayPoints.toFixed(0) }} total points</div>
+      </h2>
+      <div class="graphmarkers">
+        <template v-for="key in 4">
+          <div class="marker major"></div>
+          <div class="marker"></div>
+        </template>
+        <div class="marker major"></div>
+      </div>
+      <div class="graphbar">
+        <div
+          class="fill transitiongraph"
+          :style="`width: ${(currentLevelProgress / currentLevelTotalPoints) * 100}%;`"
+        >
+          <div
+            class="month"
+            v-if="onFinalLevel && finalLevelProgress <= thisMonthPoints"
+            :style="`width: ${(thisMonthPoints / currentLevelProgress) * 100}%;`"
+          >
+            <div
+              class="week"
+              v-if="onFinalLevel && finalLevelProgress <= thisWeekPoints"
+              :style="`width: ${(thisWeekPoints / currentLevelProgress) * 100}%;`"
+            >
+            </div>
+          </div>
+          <span class="label">{{ Math.round(currentLevelProgress - 0.4) }}</span>
+        </div>
+        <div class="right">{{ Math.round(currentLevelTotalPoints) }}</div>
+      </div>
+      <div class="martopsmall">
+        <span class="all">All Time </span>
+        <span class="month">This Month </span>
+        <span class="week">This Week </span>
+      </div>
+    </div>
+    <br />
+    <div>Potential future points:</div>
+    <div class="sub">Attendance streak</div>
+    <div class="sub">Bounce back</div>
+    <div class="sub">Gain a rival!</div>
+    <br />
     <div>Upcoming Tournaments Near You</div>
     <div class="sub">
       Next week - 
@@ -9,42 +55,6 @@
       In 2 weeks - 
       <span style="text-decoration: underline;">Friday Night Melee #20</span>
     </div>
-    <br />
-    <h2>
-      Level
-      <span class="highlight">{{ this.currentLevel }}</span>
-    </h2>
-    <div class="graphmarkers">
-      <template v-for="key in 4">
-        <div class="marker major"></div>
-        <div class="marker"></div>
-      </template>
-      <div class="marker major"></div>
-    </div>
-    <div class="graphbar">
-      <div
-        class="fill"
-        :class="{
-          transitiongraph: currentLevelProgress > 0.3,
-          week: finalLevel == currentLevel && finalLevelProgress <= thisWeekPoints,
-          month: finalLevel == currentLevel && finalLevelProgress <= thisMonthPoints,
-        }"
-        :style="`width: ${(currentLevelProgress / currentLevelTotalPoints) * 100}%;`"
-      >
-        {{ Math.round(currentLevelProgress - 0.4) }}
-      </div>
-      <div class="right">{{ Math.round(currentLevelTotalPoints) }}</div>
-    </div>
-    <div class="martopsmall">
-      <span class="all">All</span>
-      <span class="month">Month</span>
-      <span class="week">Week</span>
-    </div>
-    <br />
-    <div>Potential future points:</div>
-    <div class="sub">Attendance streak</div>
-    <div class="sub">Bounce back</div>
-    <div class="sub">Gain a rival!</div>
   </div>
 </template>
 
@@ -76,6 +86,7 @@ export default {
     currentLevelTotalPoints () { return this.levelBreaks[this.currentLevel] - this.levelBreaks[this.currentLevel - 1] },
     currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) },
     finalLevelProgress () { return (this.points.total - this.levelBreaks[this.finalLevel - 1]) },
+    onFinalLevel () { return this.displayPoints >= this.levelBreaks[this.finalLevel - 1]},
     mostRecentTournamentPoints () { return this.points.tournaments[0].total },
     aWeekAgo () { return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     aMonthAgo () { return new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000) },
@@ -94,7 +105,7 @@ export default {
   },
   watch : {
     points (newPoints, oldPoints) {
-      this.pointsToAdd += newPoints.total - oldPoints.total
+      this.pointsToAdd += newPoints.total - (oldPoints ? oldPoints.total : 0)
     },
     pointsToAdd (newPointsToAdd) {
       if (newPointsToAdd > 0 && this.adding == false)
@@ -109,16 +120,16 @@ export default {
       window.setTimeout(() => {
         if (this.pointsToAdd === 0)
           return this.adding = false
-        let pointsToAddThisTime = ((this.points.total / (this.displayPoints || 1)) - 1) + (this.points.total / 1500)
+        let pointsToAddThisTime = (this.points.total - this.displayPoints) / 40 + (this.points.total / 1000)
         if (pointsToAddThisTime > this.pointsToAdd) pointsToAddThisTime = this.pointsToAdd
         this.displayPoints += pointsToAddThisTime
         this.pointsToAdd -= pointsToAddThisTime
         this.addPoints()
+        console.log((this.thisMonthPoints / this.currentLevelTotalPoints) * 100)
       }, 40)
     },
     levelPoints (l) {
-      return (((l * 2) * l) + 10) * 5
-      //return Math.ceil(Math.sqrt(points.total) / 3) },
+      return (((l * 2) * l) + 10) * 5000
     },
   },
 }
@@ -140,16 +151,16 @@ export default {
 }
 
 .all {
-  background: #0f0;
+  background: #0f0 !important;
   color: #222;
 }
 
 .month {
-  background: #0f7;
+  background: #0fa !important;
   color: #222;
 }
 .week {
-  background: #0fd;
+  background: #0ff !important;
   color: #222;
 }
 </style>

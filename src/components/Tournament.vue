@@ -9,7 +9,7 @@
         :start="0"
         :end="points.total"
         :decimals="0"
-        :duration="3"
+        :duration="5"
       />
       points!
     </h2>
@@ -19,7 +19,7 @@
         class="pointscategory"
       >
         <div v-for="point in category">
-          <span class="highlight">+{{ point.value }}</span>
+          <span class="highlight" :class="{alt: point.type !== 'concrete', }">+{{ point.value }}</span>
           {{ point.desc }}
           <span v-if="point.context" class="fade">({{ point.context }})</span>
         </div>
@@ -113,7 +113,7 @@ export default {
 <style scoped lang="scss">
 .tournament {
   flex: 1;
-  min-width: 400px;
+  min-width: 300px;
   margin-bottom: 30px;
   margin-right: 30px;
   //background: rgba(white, .05);

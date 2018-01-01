@@ -25,7 +25,7 @@ function TournamentPoints (t) {
 	let details = {}
 
 	// You showed up! Yay!
-	details['tournament'] = [{ value: 20, desc: 'Participated in a tournament', type: 'concrete', }]
+	details['tournament'] = [{ value: 20000, desc: 'Participated in a tournament', type: 'concrete', }]
 
 	// Tournament size
 	details['tournament'] = details['tournament'].concat(tournamentSizePoints(t)).filter(d => d)
@@ -45,7 +45,7 @@ function TournamentPoints (t) {
 	let total = 0
 	for (let category in details) {
 		details[category].forEach(p => {
-			console.log(total, p)
+			//console.log(total, p)
 		  total += p.value
 		})
 	}
@@ -53,30 +53,27 @@ function TournamentPoints (t) {
 }
 
 function tournamentSizePoints (t) {
-	if (t.totalParticipants < 20) return { value: 5, desc: 'Supporting the local scene', context: 'small tournament', type: 'concrete', }
-	else if (t.totalParticipants > 200) return { value: 10, desc: 'Getting in the mix', context: 'major tournament', type: 'concrete', }
+	if (t.totalParticipants < 20) return { value: 5000, desc: 'Supporting the local scene', context: 'small tournament', type: 'progression', }
+	else if (t.totalParticipants > 200) return { value: 10000, desc: 'Getting in the mix', context: 'major tournament', type: 'progression', }
 }
 
 function placingPoints (t) {
-	if (t.totalParticipants < 4 && t.placing == 1) return { value: 16, desc: 'You won!', type: 'concrete', }
-	else if (t.totalParticipants < 4 && t.placing == 2) return { value: 12, desc: 'So close!', context: 'top 2 at ' + t.name, type: 'concrete', }
-	else if (t.totalParticipants < 8 && t.placing >= 4) return { value: 10, desc: 'Top 4!', type: 'concrete', }
-	else if (t.totalParticipants < 12 && t.placing >= 8) return { value: 8, desc: 'Top 8!', type: 'concrete', }
-	else if (t.totalParticipants < 20 && t.placing >= 16) return { value: 6, desc: 'Top 16!', type: 'concrete', }
-	else if (t.placing / t.totalParticipants <= .5) return { value: 6, desc: 'Top 50%!', type: 'concrete', }
-	else if (t.placing / t.totalParticipants <= .75) return { value: 4, desc: 'Top 75%!', type: 'concrete', }
+	if (t.totalParticipants > 4 && t.placing == 1) return { value: 16000, desc: 'You won!', type: 'concrete', }
+	else if (t.totalParticipants > 4 && t.placing == 2) return { value: 12000, desc: 'So close!', context: 'top 2', type: 'concrete', }
+	else if (t.totalParticipants > 8 && t.placing <= 4) return { value: 10000, desc: 'Top 4!', type: 'concrete', }
+	else if (t.totalParticipants > 12 && t.placing <= 8) return { value: 8000, desc: 'Top 8!', type: 'concrete', }
+	else if (t.totalParticipants > 20 && t.placing <= 16) return { value: 6000, desc: 'Top 16!', type: 'concrete', }
+	else if (t.placing / t.totalParticipants <= .5) return { value: 6000, desc: 'Top 50%!', type: 'concrete', }
+	else if (t.placing / t.totalParticipants <= .75) return { value: 4000, desc: 'Top 75%!', type: 'concrete', }
 }
 
 function match (m, t) {
 	const matchPoints = []
-	const basePoints = 1
+	const basePoints = 1000
 	const opponentRankingThisTournament = (t.totalParticipants - m.opponentPlacing) / t.totalParticipants
 	const playerRankingThisTournament = (t.totalParticipants - t.placing) / t.totalParticipants
-	const points = basePoints + Math.ceil((opponentRankingThisTournament / playerRankingThisTournament))
-	if (m.won)
-		matchPoints.push({ value: points, desc: `Won a match`, context: `vs ${m.opponent}`, type: 'concrete', })
-	else
-		matchPoints.push({ value: points, desc: `Played a match`, context: `vs ${m.opponent}`, type: 'concrete', })
+	const points = basePoints + Math.ceil((opponentRankingThisTournament / playerRankingThisTournament) * 1000)
+		matchPoints.push({ value: points, desc: `Match vs. ${m.opponent}`, type: 'concrete', })
 
 	const inOtherTournaments = findPlayerInAllLoadedTournaments(m.opponent).filter(o => o.url !== t.url )
 	if (inOtherTournaments.length > 0) {
@@ -88,14 +85,14 @@ function match (m, t) {
 			.reduce((total, o) => total + o) / inOtherTournaments.length
 		if (opponentAvgRanking <= opponentRankingThisTournament || opponentAvgPlacing >= m.opponentPlacing ) {
 			if (!m.won)
-				matchPoints.push({ value: 3, desc: `Opponent was on fire`, context: `${m.opponent} did better than usual this tournament`, type: 'relational', })
+				matchPoints.push({ value: 3000, desc: `Opponent was on fire!`, context: `${m.opponent} did better than usual at this tournament`, type: 'relational', })
 			else
-				matchPoints.push({ value: 3, desc: `Stopped a train`, context: `${m.opponent} did better than usual this tournament`, type: 'relational', })
+				matchPoints.push({ value: 3000, desc: `Stopped a train!`, context: `${m.opponent} did better than usual at this tournament`, type: 'relational', })
 		}
 	}
 
 	if (userRanking <= playerAverageRanking(m.opponent) / 2)
-		matchPoints.push({ value: 3, desc: `Strong opponent`, context: `${m.opponent} usually places well`, type: 'relational', })
+		matchPoints.push({ value: 3000, desc: `Strong opponent`, type: 'relational', })
 
 	return matchPoints
 }
@@ -112,17 +109,17 @@ function streaks (m) {
 
 function findPlayerInAllLoadedTournaments (player) {
   let inAll = []
-  for (let t of all) {
-    for (let p of t.participants) {
+  for (let t in all) {
+    for (let p of all[t].participants) {
       if (p.name.toLowerCase() === player.toLowerCase()) {
         inAll.push({
-          name: t.name,
+          name: all[t].name,
           placing: p.placing,
           seed: p.seed,
-          date: t.date,
-          url: t.url,
-          participants: t.totalParticipants,
-          ranking: (t.totalParticipants - p.placing) / t.totalParticipants,
+          date: all[t].date,
+          url: all[t].url,
+          participants: all[t].totalParticipants,
+          ranking: (all[t].totalParticipants - p.placing) / all[t].totalParticipants,
         })
         break
       }

@@ -13,10 +13,10 @@ dbTournaments.find({}).then(foundDbTournaments => {
   console.log('Found', foundDbTournaments.length, 'tournaments in database.')
 })
 
-async function getTournament (url) {
+async function getTournament (url, passedHost) {
   const savedData = await dbTournaments.findOne({ url: url })
   if (savedData) {
-    console.log('Loading presaved tournament', savedData.name)
+    //console.log('Loading presaved tournament', savedData.name)
     return {
       ...savedData,
       ...tournamentMethods,
@@ -30,7 +30,7 @@ async function getTournament (url) {
     id: data.id,
     url: url,
     date: data.started_at,
-    phantomHost: '',
+    phantomHost: passedHost || '',
     participantsCount: data.participants_count,
     participants: data.participants.map(p => {
       return parseParticipantData(p.participant)
@@ -57,7 +57,7 @@ async function getTournament (url) {
     }).filter(m => m)
     Players.update(
       p.participant.name,
-      data.name,
+      data.url,
       relevantMatches,
       {
         seed: p.participant.seed,
@@ -78,7 +78,7 @@ const tournamentMethods = {
     const matches = JSON.stringify(this.matches).toLowerCase()
     const inTournament = matches.indexOf(id) >= 0
     if (inTournament){
-      console.log(participant, 'also participated in', this.name)
+      //console.log(participant, 'also participated in', this.name)
       return this
     }
     else

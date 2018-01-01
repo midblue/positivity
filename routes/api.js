@@ -17,9 +17,13 @@ router.get('/tournament/:tournament', function (req, res) {
 router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
   const tournament = req.params.tournament
   const participant = req.params.participant
+  let thisHost
   Tournaments(tournament)
   .then(res => res.host())
-  .then(host => fetch(`http://challonge.com/users/${host}`))
+  .then(host => {
+    thisHost = host
+    return fetch(`http://challonge.com/users/${host}`)
+  })
   .then(res => res.text())
   .then(tournaments => {
     tournaments = tournaments.substring(tournaments.indexOf('<h3>Tournaments'))
@@ -33,7 +37,7 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
     const foundIn = []
     const promises = []
     tournaments.forEach((t) => {
-      const promise = Tournaments(t)
+      const promise = Tournaments(t, thisHost)
       .then(tobj => tobj.isUserInTournament(participant))
       .then(res => { if (res) foundIn.push(res) })
       promises.push(promise)
@@ -45,5 +49,10 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
   })
 })
 
+router.get('/player/:player', async (req, res) => {
+  const player = req.params.player
+  const foundPlayer = await Players.get(player)
+  res.send(foundPlayer || {})
+})
 
 module.exports = router

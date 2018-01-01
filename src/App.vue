@@ -1,12 +1,15 @@
 <template>
   <div id="app">
     <Header
+      :tournaments="rawTournamentData"
       v-on:addTournamentData="addTournamentData"
     />
     <UserInfo
+      v-if="user"
       :points="points"
     />
     <Tournaments
+      v-if="user && tournaments"
       :tournaments="tournaments"
       :points="points"
     />
@@ -29,6 +32,7 @@ export default {
   computed: {
     user () { return this.$store.state.user },
     tournaments () {
+      if (!this.user || this.rawTournamentData.length < 1) return null
       const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date)
       for (let t in tournaments) {
         const winData = this.winData(this.user, tournaments[t])
@@ -47,17 +51,15 @@ export default {
       return tournaments
     },
     points () {
+      if (!this.user || !this.tournaments) return null
       return points(this.tournaments, this.user)
     },
   },
-  mounted () {
-    this.$store.commit('set', {
-      user: window.localStorage.getItem('user') || 'jasp',
-    })
-  },
+  mounted () {},
   methods: {
     addTournamentData (data) {
-      this.rawTournamentData.push(data)
+      if (!this.rawTournamentData.find(t => t.url === data.url))
+        this.rawTournamentData.push(data)
     },
     winData (name, tournament) {
       const id = this.getIDFromName(name, tournament)
@@ -86,14 +88,16 @@ export default {
       }).filter(m => m)
     },
     getNameFromID (id, tournament) {
-      return tournament.participants.find(p => p.id === id).name
+      return tournament.participants.find(p => p.id === id).name.toLowerCase()
     },
     getIDFromName (name, tournament) {
-      return tournament.participants.find(p => p.name === name).id
+      const found = tournament.participants.find(p => p.name.toLowerCase() === name.toLowerCase())
+      return found ? found.id : false
     },
     getPlacing (participant, tournament) {
-      const id = typeof participant === 'number' ? participant : this.getIDFromName(participant, tournament)
-      return tournament.participants.find(p => p.id === id).placing
+      const name = typeof participant !== 'number' ? participant : this.getNameFromID(participant, tournament)
+      const found = tournament.participants.find(p => p.name.toLowerCase() === name.toLowerCase())
+      return found ? found.placing : false
     },
   },
 }
@@ -101,13 +105,9 @@ export default {
 
 <style scoped lang="scss">
 #app {
-  width: 100%;
-  height: 100vh;
   font-family: monospace;
   font-size: 14px;
   color: #f5f5f3;
-  background: #333;
-  overflow-y: auto;
 }
 
 </style>

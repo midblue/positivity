@@ -1,43 +1,72 @@
-const Players = {}
+
+const db = require('monk')('localhost/positivity')
+const dbPlayers = db.get('players')
+
+// load all players from database on startup
+dbPlayers.find({}).then(foundDbPlayers => {
+  console.log('Found', foundDbPlayers.length, 'players in database.')
+})
 
 module.exports = {
-	new (name) {
+	async new (name) {
+		name = name.toLowerCase()
+		//console.log('Adding new player', name, 'to database')
 	  const newPlayer = {
+	  	name: name,
 	    placings: {},
 	    matches: [],
 	  }
-	  Players[name] = newPlayer
+	  await dbPlayers.insert(newPlayer)
 	  return newPlayer
 	},
 
-	update (name, tournament, matches, placing) {
-		if (!Players[name])
-			this.new(name)
+	async update (name, tournament, matches, placing) {
+		name = name.toLowerCase()
+		let savedData = await dbPlayers.findOne({ name: name })
+		if (!savedData) {
+		  savedData = await this.new(name)
+		}
+		delete savedData._id
 		if (matches) {
 			for (let m in matches)
-				Players[name].matches.push(matches[m])
+				savedData.matches.push(matches[m])
 		}
-		if (placing) Players[name].placings[tournament] = placing
+		if (placing) {
+			savedData.placings[tournament] = placing
+		}
+		dbPlayers.update({ name: name }, savedData)
 	},
 
-	get (name) {
-		return Players[name] || this.new(name)
+	async get (name) {
+		name = name.toLowerCase()
+		const savedData = await dbPlayers.findOne({ name: name })
+		if (savedData) {
+		  console.log('Loading presaved player', savedData.name)
+		  return savedData
+		}
+		else {
+			console.log('No player saved by the name', savedData.name)
+			return null
+		}
 	},
 
-	placings (name) {
-		return Players[name] ? Players[name].placings : {}
-	},
+	// async placings (name) {
+	// name = name.toLowerCase()
+	// 	return Players[name] ? Players[name].placings : {}
+	// },
 
-	matches (name) {
-		return Players[name] ? Players[name].matches : []
-	},
+	// async matches (name) {
+	//  name = name.toLowerCase()
+	// 	return Players[name] ? Players[name].matches : []
+	// },
 
-	exists (name) {
-		return Players[name] ? true : false
-	},
+	// async exists (name) {
+	//  name = name.toLowerCase()
+	// 	return Players[name] ? true : false
+	// },
 
-	report () {
-		console.log(`${Object.keys(Players)} 
-			${Object.keys(Players).length} players tracked`)
+	async report () {
+		const savedData = await dbPlayers.find({})
+	  console.log(savedData.length)
 	},
 }

@@ -1,9 +1,8 @@
 <template>
   <div id="add">
-    <form v-on:submit.prevent="getTournamentAndSiblings">
-      <div>Add additional tournaments</div>
-      <!-- <div class="sub fade">(We'll also automatically pull other tournaments you're in from that host)</div> -->
-      <input v-model="typedTournament" />
+    <form v-on:submit.prevent="getTournamentAndSiblings(typedTournament)">
+      <div>Add additional tournament (url ending)</div>
+      <input v-model="typedTournament" placeholder="i.e. 'lieswkev'" />
       <button type="submit">
         Add
       </button>
@@ -16,35 +15,24 @@
 
 export default {
   components: {},
-  props: [],
+  props: [ 'tournamentsToLoad', ],
   data () {
     return {
-      apiURL: './api',
-      typedTournament: '7cx6wwa2',//'lieswkev',//'sqd0djjc',
-      loading: true,
+      typedTournament: '',//'lieswkev',//'sqd0djjc',
+      loading: false,
     }
   },
   computed: {
     user () { return this.$store.state.user },
+    apiURL () { return this.$store.state.apiURL },
   },
   mounted () {
     this.$nextTick(() => {
-      this.getTournamentAndSiblings()
+      //this.getTournamentAndSiblings(this.typedTournament)
     })
   },
   methods: {
-    getTournamentAndSiblings () {
-      fetch(`${this.apiURL}/tournament/${this.typedTournament}`)
-      .then(res => res.json())
-      .then(data => this.$emit('addTournamentData', data))
-      fetch(`${this.apiURL}/alsoCompetedIn/${this.typedTournament}/${this.user}`)
-      .then(res => res.json())
-      .then(data => {
-        for (let t of data)
-          this.$emit('addTournamentData', t)
-        this.loading = false
-      })
-    }
+    getTournamentAndSiblings (t) { this.$emit('getTournamentAndSiblings', t) }
   },
 }
 </script>
