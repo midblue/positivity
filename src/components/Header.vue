@@ -1,9 +1,9 @@
 <template>
   <div id="header">
     <h1 class="padright">{{ user }}</h1>
-    <a class="button padright" @click.prevent="logOut">Logout</a>
+    <a class="button padright" @click.prevent="logout">Logout</a>
     <div class="padright padtop padbot">
-      <div>Found you in {{ tournaments.length }} tournaments<span v-if="tournaments.length > 0">:</span></div>
+      <div>Found you in {{ tournaments.length }} tournament<span v-if="tournaments.length !== 1">s</span><span v-if="tournaments.length > 0">:</span></div>
       <div v-for="t in tournaments" class="sub">
         {{ t.name }}
       </div>
@@ -11,6 +11,7 @@
     <AddTournament
       v-on:getTournamentAndSiblings="getTournamentAndSiblings"
     />
+    <div v-if="loading" class="three-quarters-loader fixtopright"></div>
   </div>
 </template>
 
@@ -21,7 +22,9 @@ export default {
   components: { AddTournament, },
   props: [ 'tournaments', ],
   data () {
-    return {}
+    return {
+      loading: false,
+    }
   },
   computed: {
     user () { return this.$store.state.user },
@@ -31,7 +34,8 @@ export default {
     this.logInCheck()
   },
   methods: {
-    logOut () {
+    logout () {
+      this.$emit('logout')
       window.localStorage.removeItem('user')
       this.$store.commit('set', {
         user: null,
@@ -47,7 +51,6 @@ export default {
       fetch(`${this.apiURL}/player/${storedUser}`)
       .then(res => res.json())
       .then(player => {
-        console.log(player)
         this.$store.commit('set', {
           user: storedUser,
         })
@@ -59,6 +62,7 @@ export default {
       })
     },
     getTournamentAndSiblings (tournament) {
+      this.loading = true
       fetch(`${this.apiURL}/tournament/${tournament}`)
       .then(res => res.json())
       .then(data => this.$emit('addTournamentData', data))
@@ -94,6 +98,11 @@ export default {
   }
   .padbot {
     padding-bottom: 30px;
+  }
+  .fixtopright {
+    position: fixed;
+    top: 30px;
+    right: 30px;
   }
 }
 

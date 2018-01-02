@@ -3,6 +3,7 @@
     <Header
       :tournaments="rawTournamentData"
       v-on:addTournamentData="addTournamentData"
+      v-on:logout="logout"
     />
     <UserInfo
       v-if="user"
@@ -60,6 +61,9 @@ export default {
     addTournamentData (data) {
       if (!this.rawTournamentData.find(t => t.url === data.url))
         this.rawTournamentData.push(data)
+    },
+    logout () {
+      this.rawTournamentData = []
     },
     winData (name, tournament) {
       const id = this.getIDFromName(name, tournament)

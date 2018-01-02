@@ -117,6 +117,7 @@ const tournamentMethods = {
         this.phantomGetHost()
         .then(host => {
           console.log('Phantom found host of', this.name + ':', host)
+          delete this._id
           dbTournaments.update({ url: this.url }, {
             ...this,
             phantomHost: host,
@@ -184,14 +185,14 @@ function parseParticipantData (participantData) {
 // utility functions
 
 function getNameFromID (id, tournamentData) {
-  const foundName = tournamentData.participants.filter((p) => {
-    return p.participant.id === id ? 1 : 0
+  const foundName = tournamentData.participants.find((p) => {
+    return p.participant.id === id
   })
-  if (foundName.length > 0) return foundName[0].participant.display_name
+  if (foundName) return foundName.participant.display_name.toLowerCase()
 }
 function getIDfromName (name, tournamentData) {
-  const foundName = tournamentData.participants.filter((p) => {
-    return p.participant.display_name === name ? 1 : 0
+  const foundName = tournamentData.participants.find((p) => {
+    return p.participant.display_name.toLowerCase() === name.toLowerCase()
   })
-  if (foundName.length > 0) return foundName[0].participant.id
+  if (foundName) return foundName.participant.id
 }

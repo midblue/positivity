@@ -8,7 +8,8 @@ const Players = require('../scripts/players.js')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
 
-setTimeout(Tournaments.clear, 100)
+// clear database for debug purposes
+// setTimeout(Tournaments.clear, 100)
 
 router.get('/tournament/:tournament', function (req, res) {
   const tournament = req.params.tournament
