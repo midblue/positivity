@@ -8,9 +8,11 @@ const Players = require('../scripts/players.js')
 
 const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
 
+setTimeout(Tournaments.clear, 100)
+
 router.get('/tournament/:tournament', function (req, res) {
   const tournament = req.params.tournament
-  Tournaments(tournament)
+  Tournaments.get(tournament)
   .then((data) => res.json(data))
 })
 
@@ -18,7 +20,7 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
   const tournament = req.params.tournament
   const participant = req.params.participant
   let thisHost
-  Tournaments(tournament)
+  Tournaments.get(tournament)
   .then(res => res.host())
   .then(host => {
     thisHost = host
@@ -37,7 +39,7 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
     const foundIn = []
     const promises = []
     tournaments.forEach((t) => {
-      const promise = Tournaments(t, thisHost)
+      const promise = Tournaments.get(t, thisHost)
       .then(tobj => tobj.isUserInTournament(participant))
       .then(res => { if (res) foundIn.push(res) })
       promises.push(promise)
@@ -51,6 +53,7 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
 
 router.get('/player/:player', async (req, res) => {
   const player = req.params.player
+  console.log('Looking up player', player)
   const foundPlayer = await Players.get(player)
   res.send(foundPlayer || {})
 })

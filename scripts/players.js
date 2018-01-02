@@ -39,13 +39,13 @@ module.exports = {
 
 	async get (name) {
 		name = name.toLowerCase()
-		const savedData = await dbPlayers.findOne({ name: name })
+		let savedData = await dbPlayers.findOne({ name: name })
 		if (savedData) {
 		  console.log('Loading presaved player', savedData.name)
 		  return savedData
 		}
 		else {
-			console.log('No player saved by the name', savedData.name)
+			console.log("'"+name+"'", 'not found in database')
 			return null
 		}
 	},

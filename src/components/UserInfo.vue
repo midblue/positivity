@@ -39,21 +39,25 @@
         <span class="month">This Month </span>
         <span class="week">This Week </span>
       </div>
+
+      <br />
+      <div>Potential future points:</div>
+      <div class="sub">Attendance streak</div>
+      <div class="sub">Bounce back</div>
+      <div class="sub">Gain a rival!</div>
+      <br />
+      <div>Upcoming Tournaments Near You</div>
+      <div class="sub">
+        Next week - 
+        <span style="text-decoration: underline;">Akihabara Weekly 2/16</span>
+      </div>
+      <div class="sub">
+        In 2 weeks - 
+        <span style="text-decoration: underline;">Friday Night Melee #20</span>
+      </div>
     </div>
-    <br />
-    <div>Potential future points:</div>
-    <div class="sub">Attendance streak</div>
-    <div class="sub">Bounce back</div>
-    <div class="sub">Gain a rival!</div>
-    <br />
-    <div>Upcoming Tournaments Near You</div>
-    <div class="sub">
-      Next week - 
-      <span style="text-decoration: underline;">Akihabara Weekly 2/16</span>
-    </div>
-    <div class="sub">
-      In 2 weeks - 
-      <span style="text-decoration: underline;">Friday Night Melee #20</span>
+    <div v-else>
+      Couldn't find you in any tournaments! Add some to see your stats.
     </div>
   </div>
 </template>
@@ -125,7 +129,6 @@ export default {
         this.displayPoints += pointsToAddThisTime
         this.pointsToAdd -= pointsToAddThisTime
         this.addPoints()
-        console.log((this.thisMonthPoints / this.currentLevelTotalPoints) * 100)
       }, 40)
     },
     levelPoints (l) {

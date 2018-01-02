@@ -13,65 +13,74 @@ dbTournaments.find({}).then(foundDbTournaments => {
   console.log('Found', foundDbTournaments.length, 'tournaments in database.')
 })
 
-async function getTournament (url, passedHost) {
-  const savedData = await dbTournaments.findOne({ url: url })
-  if (savedData) {
-    //console.log('Loading presaved tournament', savedData.name)
-    return {
-      ...savedData,
+// exposed functions
+module.exports = {
+  async get (url, passedHost) {
+    const savedData = await dbTournaments.findOne({ url: url })
+    if (savedData) {
+      //console.log('Loading presaved tournament', savedData.name)
+      return {
+        ...savedData,
+        ...tournamentMethods,
+      }
+    }
+
+    const data = await getChallongeTournamentData(url)
+    let newTournament = {
+      name: data.name,
+      rawData: data,
+      id: data.id,
+      url: url,
+      date: data.started_at,
+      phantomHost: passedHost || '',
+      participantsCount: data.participants_count,
+      participants: data.participants.map(p => {
+        return parseParticipantData(p.participant)
+      }),
+      matches: data.matches.map(m => {
+        return parseMatchData(m.match, data)
+      }),
+    }
+
+    newTournament = {
+      ...newTournament,
       ...tournamentMethods,
     }
-  }
 
-  const data = await getChallongeTournamentData(url)
-  let newTournament = {
-    name: data.name,
-    rawData: data,
-    id: data.id,
-    url: url,
-    date: data.started_at,
-    phantomHost: passedHost || '',
-    participantsCount: data.participants_count,
-    participants: data.participants.map(p => {
-      return parseParticipantData(p.participant)
-    }),
-    matches: data.matches.map(m => {
-      return parseMatchData(m.match, data)
-    }),
-  }
-
-  newTournament = {
-    ...newTournament,
-    ...tournamentMethods,
-  }
-
-  // save player data
-  data.participants.map(p => {
-    const participantId = p.participant.id
-    let relevantMatches = data.matches.map(m => {
-      if (m.match.player1_id === participantId || m.match.player2_id === participantId)
-        return {
-          ...parseMatchData(m.match, data),
-          tournament: data.name,
+    // save player data
+    data.participants.map(p => {
+      const participantId = p.participant.id
+      let relevantMatches = data.matches.map(m => {
+        if (m.match.player1_id === participantId || m.match.player2_id === participantId)
+          return {
+            ...parseMatchData(m.match, data),
+            tournament: data.name,
+          }
+      }).filter(m => m)
+      Players.update(
+        p.participant.name,
+        data.url,
+        relevantMatches,
+        {
+          seed: p.participant.seed,
+          placing: p.participant.final_rank,
+          outOf: data.participants_count,
         }
-    }).filter(m => m)
-    Players.update(
-      p.participant.name,
-      data.url,
-      relevantMatches,
-      {
-        seed: p.participant.seed,
-        placing: p.participant.final_rank,
-        outOf: data.participants_count,
-      }
-    )
-  })
+      )
+    })
 
-  // save it
-  dbTournaments.insert(newTournament)
-  return newTournament
+    // save it
+    dbTournaments.insert(newTournament)
+    return newTournament
+  },
+  clear () {
+    console.log('CLEARING ALL TOURNAMENT AND PLAYER ENTRIES IN DATABASE')
+    dbTournaments.remove({})
+    db.get('players').remove({})
+  }
 }
 
+// methods that get added to all live tournaments
 const tournamentMethods = {
   isUserInTournament (participant) {
     const id = getIDfromName(participant, this.rawData)
@@ -119,6 +128,7 @@ const tournamentMethods = {
   },
 }
 
+// load new data from API
 function getChallongeTournamentData (tournament) {
   console.log('Getting new tournament data for', tournament, 'from API')
   return new Promise((resolve, reject) => {
@@ -135,6 +145,7 @@ function getChallongeTournamentData (tournament) {
   })
 }
 
+// turn API data into commonly pareseable data
 function parseMatchData (matchData, tournamentData) {
   return {
     players: [
@@ -158,6 +169,7 @@ function parseMatchData (matchData, tournamentData) {
   }
 }
 
+// turn API data into commonly pareseable data
 function parseParticipantData (participantData) {
   return {
     id: participantData.id,
@@ -166,6 +178,10 @@ function parseParticipantData (participantData) {
     placing: participantData.final_rank,
   }
 }
+
+
+
+// utility functions
 
 function getNameFromID (id, tournamentData) {
   const foundName = tournamentData.participants.filter((p) => {
@@ -179,5 +195,3 @@ function getIDfromName (name, tournamentData) {
   })
   if (foundName.length > 0) return foundName[0].participant.id
 }
-
-module.exports = getTournament

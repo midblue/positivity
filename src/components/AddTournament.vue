@@ -1,7 +1,7 @@
 <template>
   <div id="add">
     <form v-on:submit.prevent="getTournamentAndSiblings(typedTournament)">
-      <div>Add additional tournament (url ending)</div>
+      <span>Add additional tournament (url ending)</span>
       <input v-model="typedTournament" placeholder="i.e. 'lieswkev'" />
       <button type="submit">
         Add

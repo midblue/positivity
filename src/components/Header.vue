@@ -2,9 +2,9 @@
   <div id="header">
     <h1 class="padright">{{ user }}</h1>
     <a class="button padright" @click.prevent="logOut">Logout</a>
-    <div class="sub padright padtop">
-      <div>Found you in {{ tournaments.length }} tournaments:</div>
-      <div v-for="t in tournaments">
+    <div class="padright padtop padbot">
+      <div>Found you in {{ tournaments.length }} tournaments<span v-if="tournaments.length > 0">:</span></div>
+      <div v-for="t in tournaments" class="sub">
         {{ t.name }}
       </div>
     </div>
@@ -77,7 +77,6 @@ export default {
 <style scoped lang="scss">
 #header {
   width: 100%;
-  height: 6em;
   //background: #222;
   padding: 0 60px;
   display: flex;
@@ -88,10 +87,13 @@ export default {
   }
 
   .padright {
-    padding-right: 30px;
+    padding-right: 42px;
   }
   .padtop {
     padding-top: 30px;
+  }
+  .padbot {
+    padding-bottom: 30px;
   }
 }
 
