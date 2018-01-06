@@ -1,6 +1,6 @@
 <template>
   <div id="tournaments">
-    <h2 class="fade">Tournaments You Competed In</h2>
+    <!-- <h2 class="fade">Tournaments You Competed In</h2> -->
     <transition-group
       name="fade"
       tag="div"
@@ -33,7 +33,8 @@ export default {
 
 <style scoped lang="scss">
 #tournaments {
-  padding: 0 30px 0 60px;
+  padding: 30px 30px 60px 60px;
+  background: #333;
 }
 
 </style>

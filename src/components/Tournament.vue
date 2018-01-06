@@ -4,14 +4,19 @@
       {{ tournamentData.name }}
       <span class="sub fade">({{ moment(tournamentData.date).fromNow() }})</span>
     </h2>
-    <h2 class="highlight">
-      +<i-count-up
-        :start="0"
-        :end="points.total"
-        :decimals="0"
-        :duration="5"
-      />
-      points!
+    <h2>
+      <div class="sub">
+        <span class="highlight">
+          +<i-count-up
+          :start="0"
+          :end="points.total"
+          :decimals="0"
+          :duration="5"
+        />
+        </span>
+        points!
+        <Coins :value="points.specialPointsTotal" />
+      </div>
     </h2>
     <div>
       <div
@@ -66,9 +71,11 @@
 <script>
 import moment from 'Moment'
 import ICountUp from 'vue-countup-v2'
+import Coins from './Coins.vue'
+
 export default {
   props: [ 'tournamentData', 'points', 'allTournaments', ],
-  components: { ICountUp, },
+  components: { ICountUp, Coins, },
   data () {
     return {}
   },

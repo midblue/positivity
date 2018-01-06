@@ -18,10 +18,10 @@
 </template>
 
 <script>
-import Header from './components/Header.vue'
-import UserInfo from './components/UserInfo.vue'
-import Tournaments from './components/Tournaments.vue'
-import points from './scripts/points.js'
+import Header from './Header.vue'
+import UserInfo from './UserInfo.vue'
+import Tournaments from './Tournaments.vue'
+import points from '../scripts/points.js'
 
 export default {
   components: { Tournaments, Header, UserInfo, },

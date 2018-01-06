@@ -4,35 +4,49 @@
       <h2>
         Level
         <span class="highlight">{{ currentLevel }}</span>
-        <div class="sub">{{ displayPoints.toFixed(0) }} total points</div>
+        <div class="sub">
+          <span class="highlight">
+            {{ displayPoints.toFixed(0) }}
+          </span>
+          total points
+        </div>
+        <Coins
+          :value="points.specialPointsTotal"
+          :total="true"
+          class="sub"
+        />
       </h2>
       <div class="graphmarkers">
-        <template v-for="key in 4">
-          <div class="marker major"></div>
+        <div></div>
+        <template v-for="key in 3">
           <div class="marker"></div>
+          <div class="marker major"></div>
         </template>
-        <div class="marker major"></div>
+        <div class="marker"></div>
+        <div></div>
       </div>
-      <div class="graphbar">
-        <div
-          class="fill transitiongraph"
-          :style="`width: ${(currentLevelProgress / currentLevelTotalPoints) * 100}%;`"
-        >
+      <div
+        class="graphbar"
+      >
           <div
-            class="month"
-            v-if="onFinalLevel && finalLevelProgress <= thisMonthPoints"
-            :style="`width: ${(thisMonthPoints / currentLevelProgress) * 100}%;`"
+            class="fill transitiongraph"
+            :style="`width: ${(currentLevelProgress / levelPoints(currentLevel)) * 100}%;`"
           >
             <div
-              class="week"
-              v-if="onFinalLevel && finalLevelProgress <= thisWeekPoints"
-              :style="`width: ${(thisWeekPoints / currentLevelProgress) * 100}%;`"
+              class="month"
+              v-if="finalLevelProgress <= thisMonthPoints"
+              :style="`width: ${(thisMonthPoints / currentLevelProgress) * 100}%;`"
             >
+              <div
+                class="week"
+                v-if="finalLevelProgress <= thisWeekPoints"
+                :style="`width: ${(thisWeekPoints / currentLevelProgress) * 100}%;`"
+              >
+              </div>
             </div>
+            <span class="label">{{ Math.round(currentLevelProgress - 0.4) }}</span>
           </div>
-          <span class="label">{{ Math.round(currentLevelProgress - 0.4) }}</span>
-        </div>
-        <div class="right">{{ Math.round(currentLevelTotalPoints) }}</div>
+          <div class="right">{{ Math.round(levelPoints(currentLevel)) }}</div>
       </div>
       <div class="martopsmall">
         <span class="all">All Time </span>
@@ -56,22 +70,24 @@
         <span style="text-decoration: underline;">Friday Night Melee #20</span>
       </div>
     </div>
-    <div v-else>
+    <h2 v-else>
       Couldn't find you in any tournaments! Add some to see your stats.
-    </div>
+    </h2>
   </div>
 </template>
 
 <script>
+import Coins from './Coins.vue'
 
 export default {
-  components: { },
+  components: { Coins, },
   props: [ 'points', ],
   data () {
     return {
       displayPoints: 0,
       pointsToAdd: 0,
       adding: false,
+      coinsTotal: 0,
     }
   },
   computed: {
@@ -87,7 +103,6 @@ export default {
     },
     currentLevel () { return this.levelBreaks.findIndex(b => b >= this.displayPoints) },
     finalLevel () { return this.levelBreaks.findIndex(b => b >= this.points.total) },
-    currentLevelTotalPoints () { return this.levelBreaks[this.currentLevel] - this.levelBreaks[this.currentLevel - 1] },
     currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) },
     finalLevelProgress () { return (this.points.total - this.levelBreaks[this.finalLevel - 1]) },
     onFinalLevel () { return this.displayPoints >= this.levelBreaks[this.finalLevel - 1]},
@@ -116,8 +131,7 @@ export default {
         this.addPoints()
     },
   },
-  mounted () {
-  },
+  mounted () {},
   methods: {
     addPoints () {
       this.adding = true
@@ -140,8 +154,8 @@ export default {
 
 <style scoped lang="scss">
 #userinfo {
-  margin-bottom: 60px;
-  padding: 0 60px;
+  padding: 30px 60px 60px 60px;
+  background: #222;
 }
 
 .right {

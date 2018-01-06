@@ -14,9 +14,14 @@ export default function (tournaments, user) {
 		points.push(TournamentPoints(t))
 	}
 	let total = 0
-	for (let p in points) total += points[p].total
+	let specialPointsTotal = 0
+	for (let p in points) {
+		total += points[p].total
+		specialPointsTotal += points[p].specialPointsTotal
+	}
 	return {
-	  total: total,
+	  total,
+	  specialPointsTotal,
 	  tournaments: points,
 	}
 }
@@ -43,13 +48,16 @@ function TournamentPoints (t) {
 	details['multitournament'] = []
 
 	let total = 0
+	let specialPointsTotal = 0
 	for (let category in details) {
 		details[category].forEach(p => {
 			//console.log(total, p)
 		  total += p.value
+		  if (p.type !== 'concrete')
+		  	specialPointsTotal += p.value
 		})
 	}
-	return { url: t.url, total: total, details: details, date: t.date }
+	return { url: t.url, total, specialPointsTotal, details, date: t.date }
 }
 
 function tournamentSizePoints (t) {
