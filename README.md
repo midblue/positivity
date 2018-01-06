@@ -1,6 +1,6 @@
 # positivity
 
-> Using challonge data to encourage low-placing players
+> Using challonge bracket data to encourage low-placing players
 
 ## Build Setup
 
@@ -8,11 +8,16 @@
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:8080
+# create db folder
+mkdir data
+
+# start mongo
+npm run mongo
+
+# run webpack frontend at localhost:8080
 npm run dev
 
-# build for production with minification
-npm run build
+# run node backend
+npm run express
 ```
 
-For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
