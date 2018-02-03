@@ -8,7 +8,7 @@
     >
       <Tournament
         v-for="t, index in tournaments"
-        :key="index"
+        :key="t.id"
         :tournamentData="t"
         :allTournaments="tournaments"
         :points="points.tournaments.find(f => t.url === f.url)"

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <Header
-      :tournaments="rawTournamentData"
+      :tournaments="tournaments || []"
       v-on:addTournamentData="addTournamentData"
       v-on:logout="logout"
     />
@@ -33,23 +33,31 @@ export default {
   computed: {
     user () { return this.$store.state.user },
     tournaments () {
-      if (!this.user || this.rawTournamentData.length < 1) return null
-      const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date)
+      if (!this.user || this.rawTournamentData.length < 1) return []
+      const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date).slice()
       for (let t in tournaments) {
-        const winData = this.winData(this.user, tournaments[t])
-        const lossData = this.lossData(this.user, tournaments[t])
-        tournaments[t] = {
-          ...tournaments[t],
-          winData: winData,
-          lossData: lossData,
-          beat: winData ? winData.map(m => m.opponent) : [],
-          lostTo: lossData ? lossData.map(m => m.opponent) : [],
-          placing: this.getPlacing(this.user, tournaments[t]),
-          totalParticipants: tournaments[t].participants.length,
-          userMatches: [...winData, ...lossData].sort((m, n) => m.date > n.date),
+        const placing = this.getPlacing(this.user, tournaments[t])
+        console.log(placing)
+        if (placing) {
+          const winData = this.winData(this.user, tournaments[t])
+          const lossData = this.lossData(this.user, tournaments[t])
+          tournaments[t] = {
+            ...tournaments[t],
+            placing,
+            winData,
+            lossData,
+            beat: winData ? winData.map(m => m.opponent) : [],
+            lostTo: lossData ? lossData.map(m => m.opponent) : [],
+            totalParticipants: tournaments[t].participants.length,
+            userMatches: [...winData, ...lossData].sort((m, n) => m.date > n.date),
+          }
+        }
+        else {
+          console.log('ditching', t, placing)
+          tournaments[t] = null
         }
       }
-      return tournaments
+      return tournaments.filter(t => t)
     },
     points () {
       if (!this.user || !this.tournaments) return null

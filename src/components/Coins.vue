@@ -1,7 +1,8 @@
 <template>
-  <div>
+  <div v-if="value > 0">
     <div>
-      <span class="highlight alt"><span v-if="!total">+</span>{{ big }}</span>
+      <span class="highlight alt">
+        <span v-if="!total">+</span>{{ big /*total ? big : (big + small/smallCutoff).toFixed(1)*/ }}</span>
       <span v-if="total">total</span>
       coin<span v-if="big !== 1">s</span>
     </div>
@@ -34,21 +35,34 @@ export default {
       currTotal: 0,
       smallCutoff: 16,
       smallValue: 200,
+      adding: false,
     }
   },
   computed: {
     big () { return Math.floor((this.currTotal / this.smallValue) / this.smallCutoff) },
     small () { return Math.floor(this.currTotal / this.smallValue) % this.smallCutoff }
   },
+  watch: {
+    value (newValue, oldValue) {
+      if (newValue > oldValue && !this.adding) this.addPoint()
+    }
+  },
   mounted () {
     if (this.value > 0) this.addPoint()
   },
   methods: {
     addPoint () {
+      this.adding = true
       window.requestAnimationFrame(() => {
-        if (this.currTotal <= this.value) {
-          this.currTotal += this.smallValue / 2 //this.value / 300
+        //if (!this.total) console.log('addpoint', this.value, this.currTotal, (this.currTotal <= this.value))
+        const toAdd = this.smallValue / 2
+        if (this.currTotal + toAdd < this.value) {
+          this.currTotal += toAdd
           this.addPoint()
+        }
+        else {
+          this.currTotal = this.value
+          this.adding = false
         }
       })
     }

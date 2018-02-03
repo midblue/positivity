@@ -66,8 +66,9 @@ function tournamentSizePoints (t) {
 }
 
 function placingPoints (t) {
-	if (t.totalParticipants > 4 && t.placing == 1) return { value: 16000, desc: 'You won!', type: 'concrete', }
-	else if (t.totalParticipants > 4 && t.placing == 2) return { value: 12000, desc: 'So close!', context: 'top 2', type: 'concrete', }
+	if (!t.placing) return
+	if (t.totalParticipants > 4 && t.placing === 1) return { value: 16000, desc: 'You won!', type: 'concrete', }
+	else if (t.totalParticipants > 4 && t.placing === 2) return { value: 12000, desc: 'So close!', context: 'top 2', type: 'concrete', }
 	else if (t.totalParticipants > 8 && t.placing <= 4) return { value: 10000, desc: 'Top 4!', type: 'concrete', }
 	else if (t.totalParticipants > 12 && t.placing <= 8) return { value: 8000, desc: 'Top 8!', type: 'concrete', }
 	else if (t.totalParticipants > 20 && t.placing <= 16) return { value: 6000, desc: 'Top 16!', type: 'concrete', }
@@ -100,7 +101,7 @@ function match (m, t) {
 	}
 
 	if (userRanking <= playerAverageRanking(m.opponent) / 2)
-		matchPoints.push({ value: 3000, desc: `Strong opponent`, type: 'relational', })
+		matchPoints.push({ value: 3000, desc: `Strong opponent`, context: `${m.opponent} usually places well`, type: 'relational', })
 
 	return matchPoints
 }

@@ -4,7 +4,7 @@
       {{ tournamentData.name }}
       <span class="sub fade">({{ moment(tournamentData.date).fromNow() }})</span>
     </h2>
-    <h2>
+    <div class="topsection">
       <div class="sub">
         <span class="highlight">
           +<i-count-up
@@ -17,8 +17,8 @@
         points!
         <Coins :value="points.specialPointsTotal" />
       </div>
-    </h2>
-    <div>
+    </div>
+    <div class="pointsbreakdown">
       <div
         v-for="category in points.details"
         class="pointscategory"
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <div class="sub">
+    <div class="sub" v-if="tournamentData.placing">
       <div>
         Placing: {{ ordinalNumber(tournamentData.placing) }}
         <span class="fade">
@@ -127,8 +127,19 @@ export default {
   //padding: 30px;
 }
 
-.pointscategory {
-  margin-bottom: 24px;
+.topsection {
+  font-size: 1.5em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+  margin-bottom: 10px;
+}
+
+.pointsbreakdown {
+  padding-top: 15px;
+
+  .pointscategory {
+    margin-bottom: 24px;
+  }
 }
 
 </style>

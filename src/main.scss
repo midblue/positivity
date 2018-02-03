@@ -140,11 +140,11 @@ $three-quarters-loader-color: #666 !default;
 
 
 .fade-enter-active, .fade-leave-active, .fade-move {
-  transition: all 1s;
+  transition: all .5s;
 }
 
 .fade-enter, .fade-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(10px);
 }
 
