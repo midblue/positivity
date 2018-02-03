@@ -16,7 +16,6 @@ who did you feel good about meeting in bracket?
 
 
 
-
 things that make you feel good about your performance
 *****************************************************
 
@@ -41,6 +40,9 @@ level-up/achievement ideas
 consistency: multiple locals etc
 placing: always GAIN points even for last place
 
+rivals?
+comparison
+on graphs
 
 
 
@@ -92,5 +94,60 @@ Michael
 the thing that sucks the worst is losing to someone whose deck sucks
 although it has happened later that i found out that there was some amazing combination in there, it just didn't come out in my matches with them
 that makes me feel better
+
+
+h0p
+of course losing sucks.
+i need to take a second after I lose out to just catch my breath. whether it's getting food, listening to music, just deep breathing, that time is important.
+then, I always write down what I did well and what I did poorly, what was working and what wasn't, etc
+so I always keep progressing and getting better
+it's ok to lose, but it's important to always take something from it
+I'm not really bothered by losses a few hours later.
+my friends don't really come out to tournaments.
+I've got one friend who saw some melee and said it looked interesting
+I don't really have any rivals or anything either
+I don't ever think about whether I should beat or lose to someone.
+it's important to consider your opponent, but you can't psych yourself out.
+
+
+
+potential user groups
+*********************
+
+the analyst
+	doesn't take any player more or less seriously than another
+	often studies past performance
+	always focuses on personal improvement
+	driven by desire for personal ability
+	almost like playing alone in a crowd
+	not very social
+	mindful of their emotions and keeps them in check
+
+emotional player
+	driven mostly by a desire to WIN
+	rates players mentally as "should beat" or "tough to beat"
+	very disheartened by losses to "should beat" players
+	quick to mention past triumphs
+	very likely to feel rivalry
+
+community player
+	not especially competitive
+	it's not cool to be really cometitive
+	doesn't see themselves as a fantastic player
+	goes to tournaments fun + social reasons
+	very engaged in the community
+	quick to mention personal achievements
+
+
+
+
+
+
+
+
+
+
+
+
 
 
