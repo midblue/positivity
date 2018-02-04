@@ -54,7 +54,8 @@
         <span class="week">This Week </span>
       </div>
 
-      <br />
+      <RivalGraph :points="points" />
+
       <div>Potential future points:</div>
       <div class="sub">Attendance streak</div>
       <div class="sub">Bounce back</div>
@@ -77,10 +78,11 @@
 </template>
 
 <script>
-import Coins from './Coins.vue'
+import Coins from './Coins'
+import RivalGraph from './RivalGraph'
 
 export default {
-  components: { Coins, },
+  components: { Coins, RivalGraph, },
   props: [ 'points', ],
   data () {
     return {

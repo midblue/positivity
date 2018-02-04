@@ -37,7 +37,6 @@ export default {
       const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date).slice()
       for (let t in tournaments) {
         const placing = this.getPlacing(this.user, tournaments[t])
-        console.log(placing)
         if (placing) {
           const winData = this.winData(this.user, tournaments[t])
           const lossData = this.lossData(this.user, tournaments[t])
