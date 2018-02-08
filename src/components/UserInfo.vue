@@ -83,7 +83,7 @@ import RivalGraph from './RivalGraph'
 
 export default {
   components: { Coins, RivalGraph, },
-  props: [ 'points', ],
+  props: [],
   data () {
     return {
       displayPoints: 0,
@@ -94,10 +94,11 @@ export default {
   },
   computed: {
     user () { return this.$store.state.user },
+    points () { return this.$store.state.points },
     levelBreaks () { 
       const levels = [0]
       let sum = 0
-      for (let i = 1; i < 200; i++){
+      for (let i = 1; i < 200; i++) {
         sum += this.levelPoints(i)
         levels[i] = sum
       }
@@ -126,6 +127,7 @@ export default {
   },
   watch : {
     points (newPoints, oldPoints) {
+      console.log(newPoints)
       this.pointsToAdd += newPoints.total - (oldPoints ? oldPoints.total : 0)
     },
     pointsToAdd (newPointsToAdd) {
@@ -133,7 +135,9 @@ export default {
         this.addPoints()
     },
   },
-  mounted () {},
+  mounted () {
+    this.pointsToAdd = this.points.total
+  },
   methods: {
     addPoints () {
       this.adding = true

@@ -55,7 +55,7 @@ export default {
       this.adding = true
       window.requestAnimationFrame(() => {
         //if (!this.total) console.log('addpoint', this.value, this.currTotal, (this.currTotal <= this.value))
-        const toAdd = this.smallValue / 2
+        const toAdd = ((this.value - this.currTotal) / 200) + (this.smallValue / 5)
         if (this.currTotal + toAdd < this.value) {
           this.currTotal += toAdd
           this.addPoint()

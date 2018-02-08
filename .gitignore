@@ -12,7 +12,7 @@ yarn-error.log
 *.sln
 
 # challonge API key
-apikey_local.json
+challonge_apikey_local.json
 
 #db
 /data/

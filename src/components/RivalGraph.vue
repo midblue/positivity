@@ -28,10 +28,11 @@ export default {
           backgroundColor: 'rgba(0,255,0,.1)',
           borderColor: '#0f0',
           lineTension: 0,
-          data: this.points.tournaments.reverse().map(t => {
-            total += t.total;
-            return {x: new Date(t.date), y: total} 
-          })
+          data: this.points.tournaments.sort((a, b) => a.date > b.date)
+            .map(t => {
+              total += t.total;
+              return {x: new Date(t.date), y: total} 
+            })
         },
       ]
       // console.log('1', dataSets[0].data)
@@ -43,7 +44,7 @@ export default {
   },
   watch : {},
   mounted () {
-    fetch(`${this.apiURL}/points/jasp`)
+    //fetch(`${this.apiURL}/points/jasp`)
   },
   methods: {},
 }

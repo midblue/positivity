@@ -3,15 +3,14 @@
 // 2: progression - points for improvement / dedication. multi-tournament
 // 3. relational - points for past-compared things out of a player's control: i.e. opponent was on fire
 
-let all = {}
-let userRanking = 0
+let Players
 
-export default function (tournaments, user) {
-	all = tournaments
-	userRanking = playerAverageRanking(user)
+module.exports = async function (name, players) {
+	if (players) Players = players
+	const { tournaments, averageRanking } = await Players.get(name)
 	const points = []
 	for (let t of tournaments) {
-		points.push(TournamentPoints(t))
+		points.push(await TournamentPoints(t, name, averageRanking, Players))
 	}
 	let total = 0
 	let specialPointsTotal = 0
@@ -26,7 +25,8 @@ export default function (tournaments, user) {
 	}
 }
 
-function TournamentPoints (t) {
+async function TournamentPoints (t, name, averageRanking) {
+	//console.log(t)
 	let details = {}
 
 	// You showed up! Yay!
@@ -39,10 +39,13 @@ function TournamentPoints (t) {
 	details['tournament'] = details['tournament'].concat(placingPoints(t)).filter(d => d)
 
 	// Matches
-	for (let m of t.userMatches) details[m.time] = match(m, t)
-
+	const userMatches = t.matches
+		.map(m => m.loser.name === name || m.winner.name === name ? m : null)
+		.filter(m => m)
+	for (let m of userMatches) details[m.time] = await match(m, t, name, averageRanking)
+	
 	// Streaks
-	details['streaks'] = streaks(t.userMatches)
+	details['streaks'] = streaks(userMatches)
 
 	// Multi-tournament
 	details['multitournament'] = []
@@ -54,7 +57,7 @@ function TournamentPoints (t) {
 			//console.log(total, p)
 		  total += p.value
 		  if (p.type !== 'concrete')
-		  	specialPointsTotal += p.value
+			specialPointsTotal += p.value
 		})
 	}
 	return { url: t.url, total, specialPointsTotal, details, date: t.date }
@@ -76,32 +79,35 @@ function placingPoints (t) {
 	else if (t.placing / t.totalParticipants <= .75) return { value: 4000, desc: 'Top 75%!', type: 'concrete', }
 }
 
-function match (m, t) {
+async function match (m, t, name, userRanking) {
 	const matchPoints = []
 	const basePoints = 1000
-	const opponentRankingThisTournament = (t.totalParticipants - m.opponentPlacing) / t.totalParticipants
+	const opponent = (m.winner.name === name ? m.loser.name : m.winner.name)
+	const opponentPlacing = t.participants.find(p => p.name === name).placing
+	const opponentRankingThisTournament = (t.totalParticipants - opponentPlacing) / t.totalParticipants
 	const playerRankingThisTournament = (t.totalParticipants - t.placing) / t.totalParticipants
 	const points = basePoints + Math.ceil((opponentRankingThisTournament / playerRankingThisTournament) * 1000)
-		matchPoints.push({ value: points, desc: `Match vs. ${m.opponent}`, type: 'concrete', })
+		matchPoints.push({ value: points, desc: `Match vs. ${opponent}`, type: 'concrete', })
 
-	const inOtherTournaments = findPlayerInAllLoadedTournaments(m.opponent).filter(o => o.url !== t.url )
-	if (inOtherTournaments.length > 0) {
-		const opponentAvgRanking = inOtherTournaments
+	const opponentData = await Players.get(opponent)
+	const opponentInOtherTournaments = opponentData.tournaments.filter(o => o.url !== t.url)
+	if (opponentInOtherTournaments.length > 0) {
+		const opponentAvgRanking = opponentInOtherTournaments
 			.map(o => o.ranking)
-			.reduce((total, o) => total + o) / inOtherTournaments.length
-		const opponentAvgPlacing = inOtherTournaments
+			.reduce((total, o) => total + o) / opponentInOtherTournaments.length
+		const opponentAvgPlacing = opponentInOtherTournaments
 			.map(o => o.placing)
-			.reduce((total, o) => total + o) / inOtherTournaments.length
-		if (opponentAvgRanking <= opponentRankingThisTournament || opponentAvgPlacing >= m.opponentPlacing ) {
+			.reduce((total, o) => total + o) / opponentInOtherTournaments.length
+		if (opponentAvgRanking <= opponentRankingThisTournament || opponentAvgPlacing >= opponentPlacing ) {
 			if (!m.won)
-				matchPoints.push({ value: 3000, desc: `Opponent was on fire!`, context: `${m.opponent} did better than usual at this tournament`, type: 'relational', })
+				matchPoints.push({ value: 3000, desc: `Opponent was on fire!`, context: `${opponent} did better than usual at this tournament`, type: 'relational', })
 			else
-				matchPoints.push({ value: 3000, desc: `Stopped a train!`, context: `${m.opponent} did better than usual at this tournament`, type: 'relational', })
+				matchPoints.push({ value: 3000, desc: `Stopped a train!`, context: `${opponent} did better than usual at this tournament`, type: 'relational', })
 		}
 	}
 
-	if (userRanking <= playerAverageRanking(m.opponent) / 2)
-		matchPoints.push({ value: 3000, desc: `Strong opponent`, context: `${m.opponent} usually places well`, type: 'relational', })
+	if (userRanking <= opponentData.averageRanking / 2)
+		matchPoints.push({ value: 3000, desc: `Strong opponent`, context: `${opponent} usually places well`, type: 'relational', })
 
 	return matchPoints
 }
@@ -114,33 +120,7 @@ function streaks (m) {
 	return streakPoints
 }
 
-// utilities
 
-function findPlayerInAllLoadedTournaments (player) {
-  let inAll = []
-  for (let t in all) {
-    for (let p of all[t].participants) {
-      if (p.name.toLowerCase() === player.toLowerCase()) {
-        inAll.push({
-          name: all[t].name,
-          placing: p.placing,
-          seed: p.seed,
-          date: all[t].date,
-          url: all[t].url,
-          participants: all[t].totalParticipants,
-          ranking: (all[t].totalParticipants - p.placing) / all[t].totalParticipants,
-        })
-        break
-      }
-    }
-  }
-  return inAll
-}
 
-// maybe we should consider "up to a certain point in time" so later shifts in ability won't skew past comparison
-function playerAverageRanking (player) {
-	let inAll = findPlayerInAllLoadedTournaments(player)
-	return inAll.length > 0 ?
-		inAll.map(o => o.ranking).reduce((total, o) => total + o) / inAll.length
-		: 0
-}
+
+

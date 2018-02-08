@@ -7,6 +7,10 @@ export default new Vuex.Store({
   state: {
     user: null,
     apiURL: './api',
+    points: {
+        total: 0,
+    },
+    tournaments: []
   },
   mutations: {
     set (state, payload) {

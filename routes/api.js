@@ -1,28 +1,34 @@
 const express = require('express')
 const fetch = require('node-fetch')
-const apiKey = require('../apikey_local.json')
 const router = express.Router()
 const phantom = require('phantom')
 const Tournaments = require('../scripts/tournaments.js')
 const Players = require('../scripts/players.js')
 
-const apiURL = `https://${apiKey.username}:${apiKey.key}@api.challonge.com/v1`
-
 // clear databases for debug purposes
 // setTimeout(Tournaments.clear, 100)
+// setTimeout(async () => {
+//   Tournaments.get('challonge', 'lieswkev')
+//   // console.log(await Players.points('jasp'))
+// }, 2000)
+// setTimeout(async () => {
+//   Tournaments.related('challonge', 'lieswkev')
+// }, 5000)
 
-router.get('/tournament/:tournament', function (req, res) {
+router.get('tournament/:service/:tournament', function (req, res) {
   const tournament = req.params.tournament
-  Tournaments.get(tournament)
+  const service = req.params.service
+  Tournaments.get(tournament, service)
   .then((data) => res.json(data))
 })
 
-router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
+router.get('/alsoCompetedIn/:service/:tournament/:participant', (req, res) => {
   const tournament = req.params.tournament
   const participant = req.params.participant
+  const service = req.params.service
   let thisHost
-  Tournaments.get(tournament)
-  .then(res => res.host())
+  Tournaments.get(tournament, service)
+  .then(res => res.getHost())
   .then(host => {
     thisHost = host
     return fetch(`http://challonge.com/users/${host}`)
@@ -40,9 +46,10 @@ router.get('/alsoCompetedIn/:tournament/:participant', (req, res) => {
     const foundIn = []
     const promises = []
     tournaments.forEach((t) => {
-      const promise = Tournaments.get(t, thisHost)
-      .then(tobj => tobj.isUserInTournament(participant))
-      .then(res => { if (res) foundIn.push(res) })
+      const promise = Tournaments.get(t, service, thisHost)
+      .then(tobj => {
+        if (tobj.isInTournament(participant)) foundIn.push(tobj)
+      })
       promises.push(promise)
     })
     Promise.all(promises)
@@ -56,7 +63,16 @@ router.get('/player/:player', async (req, res) => {
   const player = req.params.player
   console.log('Looking up player', player)
   const foundPlayer = await Players.get(player)
-  res.send(foundPlayer || {})
+  const points = await Players.points(player)
+  res.send({...foundPlayer, points} || {})
 })
+
+router.get('/points/:player', async (req, res) => {
+  const player = req.params.player
+  console.log('Looking up points for player', player)
+  const foundPoints = await Players.points(player)
+  res.send(foundPoints)
+})
+
 
 module.exports = router

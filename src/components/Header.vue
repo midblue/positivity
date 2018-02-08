@@ -21,7 +21,7 @@ import AddTournament from './AddTournament.vue'
 
 export default {
   components: { AddTournament, },
-  props: [ 'tournaments', ],
+  props: [],
   data () {
     return {
       loading: false,
@@ -30,6 +30,7 @@ export default {
   computed: {
     user () { return this.$store.state.user },
     apiURL () { return this.$store.state.apiURL },
+    tournaments () { return this.$store.state.tournaments },
   },
   mounted () {
     this.logInCheck()
@@ -51,29 +52,31 @@ export default {
       }
       fetch(`${this.apiURL}/player/${storedUser}`)
       .then(res => res.json())
-      .then(player => {
+      .then(data => {
         this.$store.commit('set', {
           user: storedUser,
-        })
-        this.$nextTick(() => {
-          for (let t in player.placings) {
-            this.getTournamentAndSiblings(t)
-          }
+          points: data.points,
+          tournaments: data.tournaments,
         })
       })
     },
-    getTournamentAndSiblings (tournament) {
+    getTournamentAndSiblings (tournament, service) {
       this.loading = true
-      fetch(`${this.apiURL}/tournament/${tournament}`)
+      fetch(`${this.apiURL}/${service}/${tournament}`)
       .then(res => res.json())
       .then(data => this.$emit('addTournamentData', data))
-      fetch(`${this.apiURL}/alsoCompetedIn/${tournament}/${this.user}`)
+      .then(this.getPoints)
+      fetch(`${this.apiURL}/alsoCompetedIn/${service}/${tournament}/${this.user}`)
       .then(res => res.json())
       .then(data => {
         for (let t of data)
           this.$emit('addTournamentData', t)
         this.loading = false
       })
+      .then(this.getPoints)
+    },
+    getPoints () {
+
     }
   },
 }

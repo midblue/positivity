@@ -17,7 +17,7 @@ export default {
     dataSets () { this.render() }
   },
   mounted () {
-    //this.render()
+    this.render()
   },
   methods: {
     render () {

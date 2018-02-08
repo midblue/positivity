@@ -8,7 +8,7 @@
     >
       <Tournament
         v-for="t, index in tournaments"
-        :key="t.id"
+        :key="t.name"
         :tournamentData="t"
         :allTournaments="tournaments"
         :points="points.tournaments.find(f => t.url === f.url)"
@@ -21,11 +21,13 @@
 import Tournament from './Tournament.vue'
 export default {
   components: { Tournament, },
-  props: [ 'tournaments', 'points', ],
+  props: [ 'tournaments', ],
   data () {
     return {}
   },
-  computed: {},
+  computed: {
+    points () { return this.$store.state.points },
+  },
   mounted () {},
   methods: {},
 }
