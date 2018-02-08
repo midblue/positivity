@@ -27,15 +27,28 @@ export default {
         maintainAspectRatio: false,
         scales: {
           xAxes: [{
+            gridLines: {
+              color: 'rgba(255,255,255,.1)'
+            },
             type: "time",
             time: {
               parser: 'MM/DD/YYYY HH:mm',
               // round: 'day'
               tooltipFormat: 'll HH:mm'
             },
+            ticks: {
+              fontColor: 'rgba(255,255,255,.7)',
+            },
           }, ],
           yAxes: [{
-            stacked: true,
+            gridLines: {
+              color: 'rgba(255,255,255,.1)'
+            },
+            stacked: false,
+            ticks: {
+              beginAtZero: true,
+              fontColor: 'rgba(255,255,255,.7)',
+            },
           }]
         },
         // legend: {

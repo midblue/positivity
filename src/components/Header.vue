@@ -24,7 +24,7 @@ export default {
   props: [],
   data () {
     return {
-      loading: false,
+      loading: true,
     }
   },
   computed: {
@@ -37,10 +37,11 @@ export default {
   },
   methods: {
     logout () {
-      this.$emit('logout')
       window.localStorage.removeItem('user')
       this.$store.commit('set', {
         user: null,
+        tournaments: [],
+        points: {},
       })
       this.logInCheck()
     },
@@ -50,33 +51,26 @@ export default {
         storedUser = window.prompt('Enter player tag')
         window.localStorage.setItem('user', storedUser)
       }
-      fetch(`${this.apiURL}/player/${storedUser}`)
-      .then(res => res.json())
-      .then(data => {
-        this.$store.commit('set', {
-          user: storedUser,
-          points: data.points,
-          tournaments: data.tournaments,
-        })
+      this.$store.commit('set', {
+        user: storedUser,
       })
+      this.$nextTick(() => this.loadData())
     },
     getTournamentAndSiblings (tournament, service) {
       this.loading = true
-      fetch(`${this.apiURL}/${service}/${tournament}`)
-      .then(res => res.json())
-      .then(data => this.$emit('addTournamentData', data))
-      .then(this.getPoints)
-      fetch(`${this.apiURL}/alsoCompetedIn/${service}/${tournament}/${this.user}`)
+      fetch(`${this.apiURL}/tournament/${'challonge'}/${tournament}/`)
+      //.then(() => setTimeout(this.loadData, 1000))
+    },
+    loadData () {
+      fetch(`${this.apiURL}/player/${this.user}`)
       .then(res => res.json())
       .then(data => {
-        for (let t of data)
-          this.$emit('addTournamentData', t)
+        this.$store.commit('set', {
+          points: data.points,
+          tournaments: data.tournaments,
+        })
         this.loading = false
       })
-      .then(this.getPoints)
-    },
-    getPoints () {
-
     }
   },
 }

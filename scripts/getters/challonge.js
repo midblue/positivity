@@ -53,8 +53,13 @@ module.exports = {
     })
     .filter(t => t)
     newTournaments.shift()
-    newTournaments.forEach(newUrl => {
-      this.get(newUrl, host)
+    const promises = []
+    newTournaments.forEach(async newUrl => {
+      promises.push(await this.get(newUrl, host))
+    })
+    Promise.all(promises)
+    .then(() => {
+      console.log('done')
     })
   },
 }

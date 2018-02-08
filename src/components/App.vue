@@ -2,7 +2,6 @@
   <div id="app">
     <Header
       :tournaments="tournaments || []"
-      v-on:logout="logout"
     />
     <UserInfo
       v-if="user"
@@ -54,12 +53,6 @@ export default {
   },
   mounted () {},
   methods: {
-    logout () {
-      this.$store.state.commit('set', {
-        tournaments: [],
-        points: {},
-      })
-    },
     winData (name, tournament) {
       return tournament.matches.map(m => {
         if (m.winner.name === this.user.toLowerCase()){

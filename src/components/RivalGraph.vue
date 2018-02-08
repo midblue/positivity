@@ -15,6 +15,7 @@ export default {
   props: [ 'points', ],
   data () {
     return {
+      rivalPoints: null,
     }
   },
   computed: {
@@ -23,30 +24,41 @@ export default {
       if (this.points.total === 0) return []
       let total = 0
       const dataSets = [
-        {
-          label: 'You',
-          backgroundColor: 'rgba(0,255,0,.1)',
-          borderColor: '#0f0',
-          lineTension: 0,
-          data: this.points.tournaments.sort((a, b) => a.date > b.date)
-            .map(t => {
-              total += t.total;
-              return {x: new Date(t.date), y: total} 
-            })
-        },
+        this.buildDataSet('You', '#0f0', 'rgba(0, 255, 0, .1)', this.points),
       ]
-      // console.log('1', dataSets[0].data)
-      dataSets[0].data.unshift({x: new Date(dataSets[0].data[0].x.getTime() - 1000000000), y: 0})
-      dataSets[0].data.push({x: new Date(), y: total})
-      // console.log('2', dataSets[0].data)
+      if (this.rivalPoints)
+        dataSets.push(
+          this.buildDataSet('Rival', '#ff0', 'rgba(255, 255, 0, .1)', this.rivalPoints)
+        )
       return dataSets
     }
   },
   watch : {},
   mounted () {
-    //fetch(`${this.apiURL}/points/jasp`)
+    fetch(`${this.apiURL}/points/jasp`)
+    .then(res => res.json())
+    .then(json => this.rivalPoints = json)
   },
-  methods: {},
+  methods: {
+    buildDataSet (label, borderColor, backgroundColor, data) {
+      let total = 0
+      const dataSet = {
+        label,
+        backgroundColor,
+        borderColor,
+        lineTension: 0,
+        data: data.tournaments.sort((a, b) => a.date > b.date)
+          .map(t => {
+            total += t.total
+            return {x: new Date(t.date), y: total} 
+          })
+      }
+      //console.log(dataSet.data)
+      dataSet.data.unshift({x: new Date(dataSet.data[0].x.getTime() - 1000000000), y: 0})
+      dataSet.data.push({x: new Date(), y: total})
+      return dataSet
+    }
+  },
 }
 </script>
 

@@ -89,7 +89,6 @@ export default {
       displayPoints: 0,
       pointsToAdd: 0,
       adding: false,
-      coinsTotal: 0,
     }
   },
   computed: {

@@ -10,7 +10,8 @@ module.exports = async function (name, players) {
 	const { tournaments, averageRanking } = await Players.get(name)
 	const points = []
 	for (let t of tournaments) {
-		points.push(await TournamentPoints(t, name, averageRanking, Players))
+		if (t.participants[0].placing)
+			points.push(await TournamentPoints(t, name, averageRanking, Players))
 	}
 	let total = 0
 	let specialPointsTotal = 0
@@ -26,7 +27,6 @@ module.exports = async function (name, players) {
 }
 
 async function TournamentPoints (t, name, averageRanking) {
-	//console.log(t)
 	let details = {}
 
 	// You showed up! Yay!

@@ -44,7 +44,8 @@ export default {
   },
   watch: {
     value (newValue, oldValue) {
-      if (newValue > oldValue && !this.adding) this.addPoint()
+      console.log(newValue, oldValue)
+      if ((newValue > oldValue || !oldValue) && !this.adding) this.addPoint()
     }
   },
   mounted () {
