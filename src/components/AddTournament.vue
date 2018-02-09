@@ -1,7 +1,7 @@
 <template>
   <div id="add">
     <form v-on:submit.prevent="search">
-      <span>Add a tournament</span>
+      <span>Search for a tournament (currently challonge only)</span>
       <input v-model="typedTournament" placeholder="i.e. 'battlegateway'" />
       <button type="submit">
         Search
@@ -21,7 +21,12 @@
           @click="getTournamentAndSiblings(s)"
           class="result"
         >
-          <div>{{ s.name }}</div>
+          <div>
+            <span class="fade">
+              {{ s.host }} -
+            </span>
+            {{ s.name }}
+          </div>
         </a>
       </div>
     </div>

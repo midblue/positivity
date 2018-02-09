@@ -23,7 +23,7 @@ router.get('/tournament/:service/:tournament', async (req, res) => {
 })
 
 router.get('/player/:player', async (req, res) => {
-  const player = req.params.player
+  const player = req.params.player.toLowerCase()
   console.log('Looking up player', player)
   const foundPlayer = await Players.get(player)
   const points = await Players.points(player)
@@ -31,7 +31,7 @@ router.get('/player/:player', async (req, res) => {
 })
 
 router.get('/points/:player', async (req, res) => {
-  const player = req.params.player
+  const player = req.params.player.toLowerCase()
   console.log('Looking up points for player', player)
   const foundPoints = await Players.points(player)
   res.send(foundPoints)
@@ -39,6 +39,7 @@ router.get('/points/:player', async (req, res) => {
 
 router.get('/search/:keyword', async (req, res) => {
   const keyword = req.params.keyword
+  console.log('Searching for tournaments by keyword', keyword)
   const results = await Tournaments.search(keyword)
   res.send(results)
 })

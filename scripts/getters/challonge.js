@@ -69,10 +69,14 @@ module.exports = {
     results.shift()
     results = results
     .map(t => {
+      const fromName = t.substring(t.indexOf('>') + 1)
+      let fromHost = fromName.substring(fromName.indexOf('users/') + 6)
+      fromHost = fromHost.substring(0, fromHost.indexOf('\">'))
       return {
         service: 'challonge',
         url: t.substring(0, t.indexOf('"')),
-        name: t.substring(t.indexOf('>') + 1, t.indexOf('</a>'))
+        name: fromName.substring(0, fromName.indexOf('</a>')),
+        host: fromHost.substring()
       }
     })
     return results
