@@ -121,6 +121,7 @@ export default {
 .tournament {
   flex: 1;
   min-width: 300px;
+  max-width: 50%;
   margin-bottom: 30px;
   margin-right: 30px;
   //background: rgba(white, .05);

@@ -35,7 +35,8 @@ export default {
   },
   methods: {
     logout () {
-      window.localStorage.removeItem('user')
+      localStorage.removeItem('user')
+      localStorage.removeItem('rival')
       this.$store.commit('set', {
         user: null,
         tournaments: null,

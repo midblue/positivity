@@ -50,7 +50,9 @@ export default {
     }
   },
   mounted () {
-    this.rivalName = localStorage.getItem('rival')
+    let savedRival = localStorage.getItem('rival')
+    if (savedRival === 'null') savedRival = null
+    this.rivalName = savedRival
   },
   methods: {
     buildDataSet (label, borderColor, backgroundColor, data) {

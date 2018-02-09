@@ -18,8 +18,7 @@ const Players = require('../scripts/players.js')
 router.get('/tournament/:service/:tournament', async function (req, res) {
   const tournament = req.params.tournament
   const service = req.params.service
-  Tournaments.get(service, tournament)
-  .then((data) => Tournaments.related(service, tournament))
+  Tournaments.related(service, tournament)
   .then(() => res.send({ status: 'done' }))
 })
 

@@ -65,14 +65,21 @@ module.exports = {
 }
 
 function saveToDatabase (builtTournament) {
-  dbTournaments.insert(builtTournament)
-  .then(() => { console.log('Saved', builtTournament.name, 'to database.') })
-  builtTournament.participants.map(p => {
-    Players.update(
-      p.name,
-      builtTournament.url,
-      builtTournament.service,
-    )
+  dbTournaments.findOne({ service: 'challonge', url: builtTournament.url })
+  .then(docs => {
+    if (docs){
+      console.log('Already have data for', builtTournament.name, '– skipping.')
+      return
+    }
+    dbTournaments.insert(builtTournament)
+    .then(() => { console.log('Saved', builtTournament.name, 'to database.') })
+    builtTournament.participants.map(p => {
+      Players.update(
+        p.name,
+        builtTournament.url,
+        builtTournament.service,
+      )
+    })
   })
 }
 
@@ -142,7 +149,7 @@ function buildTournament(data, passedHost) {
 }
 
 function parseParticipantData (participantData) {
-  if (participantData.group_player_ids.length > 0 || !participantData.id) console.log(participantData)
+  //if (participantData.group_player_ids.length > 0 || !participantData.id) console.log(participantData)
   return {
     localId: participantData.group_player_ids.length > 0 ? 
       participantData.group_player_ids[0] : participantData.id,
