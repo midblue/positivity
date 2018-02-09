@@ -106,9 +106,18 @@ export default {
       return levels
     },
     currentLevel () { return this.levelBreaks.findIndex(b => b >= this.displayPoints) },
-    finalLevel () { return this.levelBreaks.findIndex(b => b >= this.points.total) },
-    currentLevelProgress () { return (this.displayPoints - this.levelBreaks[this.currentLevel - 1]) },
-    finalLevelProgress () { return (this.points.total - this.levelBreaks[this.finalLevel - 1]) },
+    finalLevel () {
+      if (!this.points) return 0
+      return this.levelBreaks.findIndex(b => b >= this.points.total)
+    },
+    currentLevelProgress () {
+      if (!this.points) return 0
+      return (this.displayPoints - this.levelBreaks[this.currentLevel - 1])
+    },
+    finalLevelProgress () { 
+      if (!this.points) return 0
+      return (this.points.total - this.levelBreaks[this.finalLevel - 1]) 
+    },
     onFinalLevel () { return this.displayPoints >= this.levelBreaks[this.finalLevel - 1]},
     mostRecentTournamentPoints () { return this.points.tournaments[0].total },
     aWeekAgo () { return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
@@ -129,7 +138,7 @@ export default {
   watch : {
     points (newPoints, oldPoints) {
       console.log(newPoints)
-      this.pointsToAdd += newPoints.total - (oldPoints ? oldPoints.total : 0)
+      this.pointsToAdd += (newPoints ? newPoints.total : 0) - (oldPoints ? oldPoints.total : 0)
     },
     pointsToAdd (newPointsToAdd) {
       if (newPointsToAdd > 0 && this.adding == false)
@@ -145,7 +154,9 @@ export default {
       window.setTimeout(() => {
         if (this.pointsToAdd === 0)
           return this.adding = false
-        let pointsToAddThisTime = (this.points.total - this.displayPoints) / 40 + (this.points.total / 1000)
+        let pointsToAddThisTime = this.points ? 
+          (this.points.total - this.displayPoints) / 40 + (this.points.total / 1000)
+          : 0
         if (pointsToAddThisTime > this.pointsToAdd) pointsToAddThisTime = this.pointsToAdd
         this.displayPoints += pointsToAddThisTime
         this.pointsToAdd -= pointsToAddThisTime

@@ -1,7 +1,9 @@
 
 
 
-const challonge = require('./getters/challonge')
+const services = {
+  challonge: require('./getters/challonge')
+}
 
 const db = require('monk')('localhost/positivity')
 const dbTournaments = db.get('tournaments')
@@ -15,20 +17,24 @@ dbTournaments.find({}).then(foundDbTournaments => {
 // exposed functions
 module.exports = {
   async get (service, url, passedHost) {
-    switch (service) {
-      case 'challonge':
-        return await challonge.get(url, passedHost)
-      default:
-        return { error: true, message: 'Invalid service name' }
-    } 
+    if (!services.hasOwnProperty(service)) return { error: true, message: 'Invalid service name' }
+    return await services[service].get(url, passedHost)
   },
   async related (service, url) {
-    switch (service) {
-      case 'challonge':
-        return await challonge.related(url)
-      default:
-        return { error: true, message: 'Invalid service name' }
-    } 
+    if (!services.hasOwnProperty(service)) return { error: true, message: 'Invalid service name' }
+    return await services[service].related(url) 
+  },
+  search (keyword) {
+    return new Promise (async (resolve, reject) => {
+      const results = {}
+      const promises = []
+      for (let service in services) {
+        promises.push(await services[service].search(keyword)
+          .then(response => results[service] = response))
+      }
+      Promise.all(promises)
+      .then(() => resolve(results)) 
+    })
   },
   clear () {
     console.log('CLEARING ALL TOURNAMENT AND PLAYER ENTRIES IN DATABASE')

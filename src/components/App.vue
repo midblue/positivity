@@ -43,10 +43,7 @@ export default {
             userMatches: [...winData, ...lossData].sort((m, n) => m.date > n.date),
           }
         }
-        else {
-          console.log('ditching', t, tournaments[t].placing)
-          tournaments[t] = null
-        }
+        else tournaments[t] = null
       }
       return tournaments.filter(t => t)
     },

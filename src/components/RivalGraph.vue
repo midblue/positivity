@@ -40,6 +40,7 @@ export default {
   },
   watch : {
     rivalName () {
+      if (!this.rivalName) return
       localStorage.setItem('rival', this.rivalName)
       fetch(`${this.apiURL}/points/${this.rivalName}`)
       .then(res => res.json())

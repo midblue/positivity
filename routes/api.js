@@ -15,7 +15,7 @@ const Players = require('../scripts/players.js')
 //   Tournaments.related('challonge', 'lieswkev')
 // }, 5000)
 
-router.get('/tournament/:service/:tournament', async function (req, res) {
+router.get('/tournament/:service/:tournament', async (req, res) => {
   const tournament = req.params.tournament
   const service = req.params.service
   Tournaments.related(service, tournament)
@@ -37,5 +37,10 @@ router.get('/points/:player', async (req, res) => {
   res.send(foundPoints)
 })
 
+router.get('/search/:keyword', async (req, res) => {
+  const keyword = req.params.keyword
+  const results = await Tournaments.search(keyword)
+  res.send(results)
+})
 
 module.exports = router

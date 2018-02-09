@@ -55,12 +55,27 @@ module.exports = {
     newTournaments.shift()
     const promises = []
     newTournaments.forEach(async newUrl => {
-      promises.push(await this.get(newUrl, host))
+      promises.push(this.get(newUrl, host))
     })
-    Promise.all(promises)
-    .then(() => {
-      console.log('done')
+    await Promise.all(promises)
+    return { status: 'success' }
+  },
+  async search (keyword) {
+    let results = await fetch(`http://challonge.com/tournaments?utf8=%E2%9C%93&q=${keyword.replace(' ', '+')}`)
+    .then(res => res.text())
+    results = results
+    .substring(results.indexOf('tbody'), results.indexOf('/tbody'))
+    .split('challonge.com/')
+    results.shift()
+    results = results
+    .map(t => {
+      return {
+        service: 'challonge',
+        url: t.substring(0, t.indexOf('"')),
+        name: t.substring(t.indexOf('>') + 1, t.indexOf('</a>'))
+      }
     })
+    return results
   },
 }
 

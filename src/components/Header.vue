@@ -55,10 +55,14 @@ export default {
       })
       this.$nextTick(() => this.loadData())
     },
-    getTournamentAndSiblings (tournament, service) {
+    getTournamentAndSiblings (t) {
       this.loading = true
-      fetch(`${this.apiURL}/tournament/${'challonge'}/${tournament}/`)
-      //.then(() => setTimeout(this.loadData, 1000))
+      fetch(`${this.apiURL}/tournament/${t.service}/${t.url}/`)
+      .then(res => res.json())
+      .then(() => {
+        console.log('finished loading new tournament data. refreshing...')
+        this.loadData()
+      })
     },
     loadData () {
       fetch(`${this.apiURL}/player/${this.user}`)
@@ -83,6 +87,8 @@ export default {
   padding: 0 60px;
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1000;
 
   .button {
     text-decoration: underline;
