@@ -4,10 +4,10 @@
       :tournaments="tournaments || []"
     />
     <UserInfo
-      v-if="user"
+      v-if="user && tournaments && points"
     />
     <Tournaments
-      v-if="user && tournaments"
+      v-if="user && tournaments && points"
       :tournaments="tournaments"
     />
   </div>
@@ -28,7 +28,7 @@ export default {
     points () { return this.$store.state.points },
     rawTournamentData () { return this.$store.state.tournaments },
     tournaments () {
-      if (!this.user || this.rawTournamentData.length < 1) return []
+      if (!this.user || !this.rawTournamentData || this.rawTournamentData.length < 1) return null
       const tournaments = this.rawTournamentData.sort((a, b) => a.date < b.date).slice()
       for (let t in tournaments) {
         if (tournaments[t].placing) {

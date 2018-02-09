@@ -2,12 +2,10 @@
   <div id="header">
     <h1 class="padright">{{ user }}</h1>
     <a class="button padright" @click.prevent="logout">Logout</a>
-    <div v-if="tournaments.length > 0" class="padright padtop padbot">
-      <div>Found you in {{ tournaments.length }} tournament<span v-if="tournaments.length !== 1">s</span></div>
-      <!-- <span v-if="tournaments.length > 0">:</span></div>
-      <div v-for="t in tournaments" class="sub">
-        {{ t.name }}
-      </div> -->
+    <div v-if="tournaments && tournaments.length > 0" class="padright padtop padbot">
+      <div>
+        Found you in {{ tournaments.length }} tournament<span v-if="tournaments.length !== 1">s</span>
+      </div>
     </div>
     <AddTournament
       v-on:getTournamentAndSiblings="getTournamentAndSiblings"
@@ -40,8 +38,8 @@ export default {
       window.localStorage.removeItem('user')
       this.$store.commit('set', {
         user: null,
-        tournaments: [],
-        points: {},
+        tournaments: null,
+        points: null,
       })
       this.logInCheck()
     },

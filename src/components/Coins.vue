@@ -46,6 +46,7 @@ export default {
     value (newValue, oldValue) {
       console.log(newValue, oldValue)
       if ((newValue > oldValue || !oldValue) && !this.adding) this.addPoint()
+      if (newValue === undefined) return
     }
   },
   mounted () {

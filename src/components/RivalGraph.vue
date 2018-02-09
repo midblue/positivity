@@ -1,5 +1,9 @@
 <template>
-  <div>
+  <div class="rivalgraph">
+    <div>
+      Rival's tag: 
+      <input v-model="rivalName" />
+    </div>
     <Graph 
       class="graph"
       :dataSets="graphDataSets"
@@ -15,6 +19,7 @@ export default {
   props: [ 'points', ],
   data () {
     return {
+      rivalName: '',
       rivalPoints: null,
     }
   },
@@ -28,16 +33,24 @@ export default {
       ]
       if (this.rivalPoints)
         dataSets.push(
-          this.buildDataSet('Rival', '#ff0', 'rgba(255, 255, 0, .1)', this.rivalPoints)
+          this.buildDataSet(this.rivalName, '#ff0', 'rgba(255, 255, 0, .1)', this.rivalPoints)
         )
       return dataSets
     }
   },
-  watch : {},
+  watch : {
+    rivalName () {
+      localStorage.setItem('rival', this.rivalName)
+      fetch(`${this.apiURL}/points/${this.rivalName}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.total > 0) this.rivalPoints = json
+        else this.rivalPoints = null
+      })
+    }
+  },
   mounted () {
-    fetch(`${this.apiURL}/points/jasp`)
-    .then(res => res.json())
-    .then(json => this.rivalPoints = json)
+    this.rivalName = localStorage.getItem('rival')
   },
   methods: {
     buildDataSet (label, borderColor, backgroundColor, data) {
@@ -63,8 +76,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.rivalgraph {
+  padding: 20px 0;
+}
 .graph {
   height: 200px;
-  padding: 20px 0;
 }
 </style>

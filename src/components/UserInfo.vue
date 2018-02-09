@@ -54,7 +54,9 @@
         <span class="week">This Week </span>
       </div>
 
-      <RivalGraph :points="points" />
+      <RivalGraph
+        :points="points"
+      />
 
       <div>Potential future points:</div>
       <div class="sub">Attendance streak</div>
@@ -112,13 +114,13 @@ export default {
     aWeekAgo () { return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     aMonthAgo () { return new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000) },
     thisWeekPoints () {
-      if (this.points.total === 0) return 0
+      if (!this.points || this.points.total === 0) return 0
       return this.points.tournaments
         .map(t => new Date(t.date) >= this.aWeekAgo ? t.total : 0 )
         .reduce((total, t) => total += t)
     },
     thisMonthPoints () {
-      if (this.points.total === 0) return 0
+      if (!this.points || this.points.total === 0) return 0
       return this.points.tournaments
         .map(t => new Date(t.date) >= this.aMonthAgo ? t.total : 0 )
         .reduce((total, t) => total += t)

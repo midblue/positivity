@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     render () {
-      console.log(this.graphData)
+      // console.log(this.graphData)
       this.renderChart(this.graphData, {
         responsive: true,
         maintainAspectRatio: false,
@@ -51,9 +51,11 @@ export default {
             },
           }]
         },
-        // legend: {
-        //   display: false,
-        // },
+        legend: {
+          labels: {
+            fontColor: 'rgba(255,255,255,.7)',
+          },
+        },
         // animation: {
         //     duration: 0,
         // },
