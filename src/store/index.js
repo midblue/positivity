@@ -8,7 +8,8 @@ export default new Vuex.Store({
     user: null,
     apiURL: './api',
     points: null,
-    tournaments: null
+    tournaments: null,
+    rival: null,
   },
   mutations: {
     set (state, payload) {

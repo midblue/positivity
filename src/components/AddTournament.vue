@@ -53,6 +53,11 @@ export default {
       //this.getTournamentAndSiblings(this.typedTournament)
     })
   },
+  watch: {
+    typedTournament (newTyped) {
+      if (newTyped === '') this.searchResults = null
+    }
+  },
   methods: {
     search () {
       fetch(`${this.apiURL}/search/${this.typedTournament}`)

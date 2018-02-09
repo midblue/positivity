@@ -49,9 +49,9 @@
           <div class="right">{{ Math.round(levelPoints(currentLevel)) }}</div>
       </div>
       <div class="martopsmall">
-        <span class="all">All Time </span>
-        <span class="month">This Month </span>
-        <span class="week">This Week </span>
+        <span class="all">&nbsp;All Time </span>&nbsp;
+        <span class="month">&nbsp;This Month </span>&nbsp;
+        <span class="week">&nbsp;This Week </span>&nbsp;
       </div>
 
       <RivalGraph

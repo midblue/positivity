@@ -33,7 +33,7 @@ export default {
       ]
       if (this.rivalPoints)
         dataSets.push(
-          this.buildDataSet(this.rivalName, '#ff0', 'rgba(255, 255, 0, .1)', this.rivalPoints)
+          this.buildDataSet(this.rivalName, '#f00', 'rgba(255, 0, 0, .1)', this.rivalPoints)
         )
       return dataSets
     }
@@ -42,6 +42,7 @@ export default {
     rivalName () {
       if (!this.rivalName) return
       localStorage.setItem('rival', this.rivalName)
+      this.$store.commit('set', { rival: this.rivalName })
       fetch(`${this.apiURL}/points/${this.rivalName}`)
       .then(res => res.json())
       .then(json => {
