@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <div class="sub" v-if="tournamentData.placing">
+    <!-- <div class="sub" v-if="tournamentData.placing">
       <div>
         Placing: {{ ordinalNumber(tournamentData.placing) }}
         <span class="fade">
@@ -64,7 +64,7 @@
           <span class="fade sub"> {{ ordinalNumber(m.opponentPlacing) }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 

@@ -6,6 +6,9 @@
     <UserInfo
       v-if="user && tournaments && points"
     />
+    <h2 v-else style="text-align: center;">
+      Couldn't find you in any tournaments! Add some to see your stats.
+    </h2>
     <Tournaments
       v-if="user && tournaments && points"
       :tournaments="tournaments"

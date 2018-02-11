@@ -58,12 +58,12 @@
         :points="points"
       />
 
-      <div>Potential future points:</div>
+      <!-- <div>Potential future points:</div>
       <div class="sub">Attendance streak</div>
       <div class="sub">Bounce back</div>
       <div class="sub">Gain a rival!</div>
-      <br />
-      <div>Upcoming Tournaments Near You</div>
+      <br /> -->
+      <!-- <div>Upcoming Tournaments Near You</div>
       <div class="sub">
         Next week - 
         <span style="text-decoration: underline;">Akihabara Weekly 2/16</span>
@@ -71,7 +71,7 @@
       <div class="sub">
         In 2 weeks - 
         <span style="text-decoration: underline;">Friday Night Melee #20</span>
-      </div>
+      </div> -->
     </div>
     <h2 v-else>
       Couldn't find you in any tournaments! Add some to see your stats.

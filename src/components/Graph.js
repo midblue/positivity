@@ -4,12 +4,14 @@ export default {
   extends: Line,
   props: [ 'dataSets', ],
   data () {
-    return {}
+    return {
+      resizeTimeout: null
+    }
   },
   computed: {
     graphData () {
       return {
-        datasets: this.dataSets
+        datasets: this.dataSets,
       }
     }
   },
@@ -18,10 +20,14 @@ export default {
   },
   mounted () {
     this.render()
+    window.addEventListener('resize', () => {
+      window.clearTimeout(this.resizeTimeout)
+      this.resizeTimeout = window.setTimeout(this.render(), 2000)
+    })
   },
   methods: {
     render () {
-      // console.log(this.graphData)
+      console.log(this.graphData)
       this.renderChart(this.graphData, {
         responsive: true,
         maintainAspectRatio: false,
